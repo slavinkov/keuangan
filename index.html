@@ -179,6 +179,23 @@
   .sheet .grab { background-clip:content-box !important; }
   .card.hero { background:linear-gradient(135deg,#1F3A5F,#2A6F97); border-color:rgba(255,255,255,.22); }
   .search .sic, .search .clr { z-index:2; }
+
+  /* pill tab: sedikit menjorok dari tepi kapsul */
+  .tabs { padding:6px 8px; }
+  .tabs button { position:relative; isolation:isolate; background:none !important; box-shadow:none !important; }
+  .tabs button[data-s]::before { content:''; position:absolute; inset:0 3px; border-radius:22px; z-index:-1; opacity:0; transform:scale(.9);
+      background:color-mix(in srgb, var(--accent) 14%, transparent); box-shadow:inset 0 1px 0 rgba(255,255,255,.35); transition:opacity .25s, transform .25s; }
+  .tabs button.on::before { opacity:1; transform:none; }
+  /* teks kartu hero tanpa baris bawah tetap di tengah */
+  .hero .big:last-child { margin-bottom:0; }
+  /* tarik untuk refresh, tanpa pantulan bawaan iOS */
+  html, body { overscroll-behavior-y:none; }
+  .ptr { position:fixed; left:50%; top:calc(env(safe-area-inset-top) + 8px); z-index:9; width:38px; height:38px; margin-left:-19px; border-radius:50%;
+         display:flex; align-items:center; justify-content:center; color:var(--accent); font-size:18px; font-weight:700; opacity:0; pointer-events:none;
+         background:var(--glass-strong); border:1px solid var(--glass-brd); box-shadow:var(--glass-sh), var(--glass-hi);
+         -webkit-backdrop-filter:blur(22px) saturate(180%); backdrop-filter:blur(22px) saturate(180%); }
+  .ptr.muter span { animation:muter .8s linear infinite; }
+  @keyframes muter { to { transform:rotate(360deg); } }
 </style>
 </head>
 <body>
@@ -191,6 +208,7 @@
   <p class="muted" id="loginMsg" style="margin-top:12px"></p>
   <p class="muted" style="margin-top:18px">Di iPhone: Safari → Share → <b>Add to Home Screen</b>.</p>
 </div>
+<div class="ptr" id="ptr"><span>↻</span></div>
 <div id="app">
 
 <!-- ============ BERANDA ============ -->
@@ -325,6 +343,7 @@ function segarkan(fn) {
 /** Seperti call(), tapi kalau ada data tersimpan langsung dikembalikan; data baru diambil di belakang lalu layar diperbarui. */
 async function callC(fn, ...args) {
   const k = 'keu_c_' + fn + JSON.stringify(args);
+  ARGS_TERAKHIR[fn] = args;
   let c = MEM[k];
   if (c === undefined) { try { c = JSON.parse(localStorage.getItem(k) || 'null'); } catch (e) { c = null; } if (c != null) MEM[k] = c; }
   if (c != null && Date.now() - (SEGAR_PADA[k] || 0) < 60000) return c;   // baru diambil < 1 menit lalu
@@ -370,7 +389,7 @@ function ikonKat(nama, tipe) { const k = INIT && INIT.kategori.find(x => x.nama 
 
 /* ---------- navigasi ---------- */
 document.querySelectorAll('.tabs button[data-s]').forEach(b => b.onclick = () => buka(b.dataset.s));
-const APP_VER = '2026.11.18-5';
+const APP_VER = '2026.11.18-6';
 /* ---------- update otomatis: cek versi terbaru di server tiap app dibuka ---------- */
 async function cekUpdate() {
   try {
@@ -381,6 +400,76 @@ async function cekUpdate() {
 }
 setTimeout(cekUpdate, 1500);
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') cekUpdate(); });
+
+/* ---------- tampilkan "utang" sebagai "hutang" (data di Sheet tidak diubah) ---------- */
+(function () {
+  const RX = /\b([Uu])(tang|TANG)\b/g, LEWATI = { SCRIPT: 1, STYLE: 1, OPTION: 1, TEXTAREA: 1 };
+  const ganti = t => t.replace(RX, (m, u, r) => (u === 'U' ? 'H' : 'h') + (r === 'TANG' ? 'U' : 'u') + r);
+  function proses(root) {
+    if (root.nodeType === 3) { if (!LEWATI[root.parentNode && root.parentNode.nodeName]) { const v = ganti(root.nodeValue); if (v !== root.nodeValue) root.nodeValue = v; } return; }
+    if (root.nodeType !== 1 || LEWATI[root.nodeName]) return;
+    const w = document.createTreeWalker(root, NodeFilter.SHOW_TEXT); let n;
+    while ((n = w.nextNode())) { if (LEWATI[n.parentNode.nodeName]) continue; const v = ganti(n.nodeValue); if (v !== n.nodeValue) n.nodeValue = v; }
+  }
+  proses(document.body);
+  new MutationObserver(ms => ms.forEach(m => { if (m.type === 'characterData') proses(m.target); else m.addedNodes.forEach(proses); }))
+    .observe(document.body, { childList: true, subtree: true, characterData: true });
+})();
+
+/* ---------- tarik ke bawah untuk refresh ---------- */
+(function () {
+  const BATAS = 70, MAKS = 110;
+  let y0, x0, tarik = false, aktif = false, d = 0, sibuk = false;
+  const app = () => document.querySelector('.screen.on'), ptr = $('ptr');
+  function set(px, anim) {
+    const a = app();
+    a.style.transition = ptr.style.transition = anim ? 'transform .3s cubic-bezier(.2,.8,.2,1), opacity .3s' : 'none';
+    a.style.transform = px ? `translateY(${px}px)` : '';
+    ptr.style.opacity = String(Math.min(1, px / BATAS));
+    ptr.style.transform = `translateY(${Math.min(px, MAKS) * 0.5}px)`;
+    ptr.firstChild.style.transform = sibuk ? '' : `rotate(${px * 4}deg)`;
+  }
+  document.addEventListener('touchstart', e => {
+    aktif = !sibuk && e.touches.length === 1 && window.scrollY <= 0 && !$('bg').classList.contains('on') &&
+            $('app').style.display !== 'none' && !e.target.closest('.sheet,.tabs,input,select,textarea');
+    if (!aktif) return;
+    y0 = e.touches[0].clientY; x0 = e.touches[0].clientX; tarik = false; d = 0;
+  }, { passive: true });
+  document.addEventListener('touchmove', e => {
+    if (!aktif) return;
+    const dy = e.touches[0].clientY - y0, dx = e.touches[0].clientX - x0;
+    if (!tarik) {
+      if (Math.abs(dx) > Math.abs(dy) || dy < 0) { if (Math.abs(dx) > 8 || dy < -4) aktif = false; return; }
+      if (dy < 6 || window.scrollY > 0) return;
+      tarik = true;
+    }
+    e.preventDefault();
+    d = Math.min(MAKS + 40, dy * 0.5);
+    set(d);
+  }, { passive: false });
+  document.addEventListener('touchend', async () => {
+    if (!aktif || !tarik) { aktif = false; return; }
+    aktif = tarik = false;
+    if (d < BATAS) { set(0, true); return; }
+    sibuk = true; ptr.classList.add('muter'); set(56, true);
+    try { await refreshLayar(); } catch (e) {}
+    sibuk = false; ptr.classList.remove('muter'); set(0, true);
+  });
+})();
+const ARGS_TERAKHIR = {};
+async function refreshLayar() {
+  const s = document.querySelector('.screen.on').id.slice(2);
+  if (s === 'home') { SEGAR_PADA_RESET(); return loadHome(true); }
+  const cari = $('q').value.trim().length >= 2;
+  const fn = s === 'tx' ? (cari ? 'apiCari' : 'apiTransaksi') : s === 'utang' ? 'apiUtang'
+           : ({ lap: 'apiLaporan', ren: 'apiRenovasi', aset: 'apiAset' })[curMore()];
+  const args = ARGS_TERAKHIR[fn] || [];
+  const k = 'keu_c_' + fn + JSON.stringify(args);
+  const dt = await call(fn, ...args);
+  MEM[k] = dt; SEGAR_PADA[k] = Date.now(); try { localStorage.setItem(k, JSON.stringify(dt)); } catch (e) {}
+  segarkan(fn);
+}
+function SEGAR_PADA_RESET() { for (const k in SEGAR_PADA) delete SEGAR_PADA[k]; }
 const URUT_TAB = ['home', 'tx', 'utang', 'more'];
 const KURANGI_GERAK = matchMedia('(prefers-reduced-motion: reduce)');
 function animMasuk(el, arah) {   // transisi halus ala iOS: fade + geser sedikit
