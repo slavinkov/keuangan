@@ -370,6 +370,17 @@ function ikonKat(nama, tipe) { const k = INIT && INIT.kategori.find(x => x.nama 
 
 /* ---------- navigasi ---------- */
 document.querySelectorAll('.tabs button[data-s]').forEach(b => b.onclick = () => buka(b.dataset.s));
+const APP_VER = '2026.11.18-5';
+/* ---------- update otomatis: cek versi terbaru di server tiap app dibuka ---------- */
+async function cekUpdate() {
+  try {
+    const t = await (await fetch(location.pathname + '?cek=' + Date.now(), { cache: 'no-store' })).text();
+    const m = t.match(/APP_VER = '([^']+)'/);
+    if (m && m[1] !== APP_VER) { toast('⬆️ Memperbarui aplikasi…', 1500); setTimeout(() => location.replace(location.pathname + '?v=' + encodeURIComponent(m[1])), 600); }
+  } catch (e) {}
+}
+setTimeout(cekUpdate, 1500);
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') cekUpdate(); });
 const URUT_TAB = ['home', 'tx', 'utang', 'more'];
 const KURANGI_GERAK = matchMedia('(prefers-reduced-motion: reduce)');
 function animMasuk(el, arah) {   // transisi halus ala iOS: fade + geser sedikit
@@ -785,7 +796,8 @@ async function loadAset() {
       <div class="card"><h3><span>Uang di Rekening</span></h3><div class="list">${r.rekening.map(a => `<div class="it"><div class="grow">${esc(a.nama)}</div><div class="amt">${rp(a.nilai)}</div></div>`).join('')}</div></div>
       <div class="card"><div class="list"><div class="it"><div class="grow">Sisa Utang</div><div class="amt out">${rp(r.sisaUtang)}</div></div></div>
       <div class="muted">Ubah nilai rumah/mobil & harga emas di Google Sheets (tab Aset & Emas).</div></div>
-      <button class="btn ghost" onclick="if(confirm('Keluar dan hapus token dari perangkat ini?')) keluar()">Keluar dari perangkat ini</button>`;
+      <button class="btn ghost" onclick="if(confirm('Keluar dan hapus token dari perangkat ini?')) keluar()">Keluar dari perangkat ini</button>
+      <div class="muted" style="text-align:center;margin-top:12px">Versi aplikasi ${APP_VER}</div>`;
   } catch (e) { el.innerHTML = `<div class="card out">❌ ${esc(e.message)}</div>`; }
 }
 
