@@ -31,7 +31,10 @@
   }
   * { box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
   html,body { margin:0; background:var(--bg); color:var(--text); font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',Roboto,Arial,sans-serif; font-size:15px; }
-  body { padding-bottom:calc(84px + env(safe-area-inset-bottom)); }
+  body { padding-bottom:calc(84px + env(safe-area-inset-bottom)); overflow-x:hidden; }
+  html { overflow-x:hidden; }
+  .screen.intip { display:block; position:fixed; top:0; left:0; right:0; height:100vh; overflow:hidden; background:var(--bg); z-index:4; pointer-events:none; }
+  .sheet .grab { padding:8px 0; background-clip:content-box; margin:-8px auto 2px; }
   .top { position:sticky; top:0; z-index:5; background:var(--bg); padding:calc(14px + env(safe-area-inset-top)) 16px 8px; display:flex; align-items:center; justify-content:space-between; }
   .top h1 { margin:0; font-size:24px; font-weight:800; letter-spacing:-.3px; }
   .top .sub { font-size:12px; color:var(--muted); margin-top:2px; }
@@ -237,7 +240,48 @@ async function call(fn, ...args) {
   } catch (e) { throw new Error('Tidak bisa terhubung. Cek koneksi internet.'); }
   const j = await r.json();
   if (!j.ok) { if (/Token salah/.test(j.error || j.pesan || '')) { keluar(true); } throw new Error(j.error || j.pesan || 'Gagal'); }
+  if (UBAH.indexOf(fn) > -1) bersihCache();
   return j.data;
+}
+/* ---------- cache di HP: tampil instan, perbarui di belakang ---------- */
+const UBAH = ['apiSimpan', 'apiHapus', 'apiSetCicilan', 'apiEdit', 'apiRenovasiBayar'];
+const MEM = {}, SEGAR_PADA = {}; let GEN = 0;
+function bersihCache() {
+  GEN++;
+  for (const k in MEM) delete MEM[k]; for (const k in SEGAR_PADA) delete SEGAR_PADA[k];
+  try { Object.keys(localStorage).filter(k => k.startsWith('keu_c_')).forEach(k => localStorage.removeItem(k)); } catch (e) {}
+}
+function segarkan(fn) {
+  const on = s => $('s-' + s).classList.contains('on');
+  const cari = $('q').value.trim().length >= 2;
+  if (fn === 'apiTransaksi' && on('tx') && !cari) loadTx();
+  else if (fn === 'apiCari' && on('tx') && cari) window.cari();
+  else if (fn === 'apiUtang' && on('utang')) loadUtang();
+  else if (on('more') && ({ apiLaporan: 'lap', apiRenovasi: 'ren', apiAset: 'aset' })[fn] === curMore()) loadMore();
+}
+/** Seperti call(), tapi kalau ada data tersimpan langsung dikembalikan; data baru diambil di belakang lalu layar diperbarui. */
+async function callC(fn, ...args) {
+  const k = 'keu_c_' + fn + JSON.stringify(args);
+  let c = MEM[k];
+  if (c === undefined) { try { c = JSON.parse(localStorage.getItem(k) || 'null'); } catch (e) { c = null; } if (c != null) MEM[k] = c; }
+  if (c != null && Date.now() - (SEGAR_PADA[k] || 0) < 60000) return c;   // baru diambil < 1 menit lalu
+  const g = GEN;
+  const ambil = call(fn, ...args).then(d => {
+    if (g !== GEN) return { d, beda: false };   // data berubah saat mengambil → jangan simpan data lama
+    const s = JSON.stringify(d), beda = s !== JSON.stringify(MEM[k]);
+    MEM[k] = d; SEGAR_PADA[k] = Date.now(); try { localStorage.setItem(k, s); } catch (e) {}
+    return { d, beda };
+  });
+  if (c == null) return (await ambil).d;
+  ambil.then(r => { if (r.beda) segarkan(fn); }).catch(() => {});
+  return c;
+}
+let SUDAH_PANASKAN = false;
+function panaskan() {   // ambil data menu lain di belakang supaya pindah menu langsung tampil
+  if (SUDAH_PANASKAN) return; SUDAH_PANASKAN = true;
+  const y = now.getFullYear(), m = now.getMonth() + 1;
+  [['apiTransaksi', y, m, ''], ['apiUtang'], ['apiLaporan', y, m], ['apiRenovasi'], ['apiAset']]
+    .forEach(([fn, ...a]) => callC(fn, ...a).catch(() => {}));
 }
 function tampilLogin(msg) {
   const ic = document.querySelector('link[rel=apple-touch-icon]'); if (ic) $('logoImg').src = ic.href;
@@ -254,6 +298,7 @@ async function masuk() {
 }
 function keluar(salah) {
   try { localStorage.removeItem('keu_token'); localStorage.removeItem('keu_boot'); } catch (e) {}
+  bersihCache();
   HOME_ADA = false;
   TK = ''; tampilLogin(salah ? 'Token tidak valid / sudah diganti. Masukkan token baru.' : 'Anda sudah keluar dari perangkat ini.');
 }
@@ -266,8 +311,56 @@ function buka(s) {
   document.querySelectorAll('.tabs button[data-s]').forEach(b => b.classList.toggle('on', b.dataset.s === s));
   document.querySelectorAll('.screen').forEach(x => x.classList.toggle('on', x.id === 's-' + s));
   window.scrollTo(0, 0);
-  if (s === 'tx') loadTx(); if (s === 'utang') loadUtang(); if (s === 'more') loadMore();
+  muatLayar(s);
 }
+function muatLayar(s) { if (s === 'tx') loadTx(); if (s === 'utang') loadUtang(); if (s === 'more') loadMore(); }
+
+/* ---------- geser kiri/kanan antar menu ---------- */
+(function () {
+  const URUT = ['home', 'tx', 'utang', 'more'];
+  let x0, y0, t0, arah = null, dx = 0, cur, nb, nbId, lebar;
+  const sekarang = () => document.querySelector('.screen.on').id.slice(2);
+  const geser = (el, x, anim) => { el.style.transition = anim ? 'transform .28s cubic-bezier(.2,.8,.2,1)' : 'none'; el.style.transform = x ? `translateX(${x}px)` : ''; };
+  document.addEventListener('touchstart', e => {
+    arah = null; dx = 0; nb = null;
+    if (e.touches.length !== 1 || $('bg').classList.contains('on') || $('app').style.display === 'none') { arah = 'x'; return; }
+    if (e.target.closest('input,select,textarea,.tabs,.sheet')) { arah = 'x'; return; }
+    x0 = e.touches[0].clientX; y0 = e.touches[0].clientY; t0 = Date.now(); lebar = innerWidth;
+  }, { passive: true });
+  document.addEventListener('touchmove', e => {
+    if (arah === 'x' || arah === 'v') return;
+    const ddx = e.touches[0].clientX - x0, ddy = e.touches[0].clientY - y0;
+    if (!arah) {
+      if (Math.abs(ddx) < 10 && Math.abs(ddy) < 10) return;
+      if (Math.abs(ddx) < Math.abs(ddy) * 1.2) { arah = 'v'; return; }
+      const i = URUT.indexOf(sekarang()), j = i + (ddx < 0 ? 1 : -1);
+      arah = 'h'; cur = $('s-' + URUT[i]);
+      if (j < 0 || j >= URUT.length) { nb = null; nbId = null; }   // ujung: efek pegas
+      else { nbId = URUT[j]; nb = $('s-' + nbId); nb.classList.add('intip'); muatLayar(nbId); }
+    }
+    e.preventDefault();
+    dx = ddx;
+    if (!nb) { geser(cur, dx * 0.2); return; }
+    if ((dx < 0) !== (URUT.indexOf(nbId) > URUT.indexOf(sekarang()))) dx = 0;   // tidak boleh lewat arah sebaliknya
+    geser(cur, dx); geser(nb, dx + (dx < 0 ? lebar : -lebar));
+  }, { passive: false });
+  document.addEventListener('touchend', () => {
+    if (arah !== 'h') return; arah = null;
+    const v = Math.abs(dx) / Math.max(1, Date.now() - t0);
+    const jadi = Math.abs(dx) > lebar * 0.3 || (v > 0.5 && Math.abs(dx) > 40);
+    const c = cur, n = nb, id = nbId, kiri = dx < 0;
+    if (!n) { geser(c, 0, true); setTimeout(() => { c.style.transition = 'none'; c.style.transform = ''; }, 280); return; }
+    if (jadi) {
+      geser(c, kiri ? -lebar : lebar, true); geser(n, 0.001, true);
+      setTimeout(() => { [c, n].forEach(el => { el.style.transition = 'none'; el.style.transform = ''; }); n.classList.remove('intip');
+        document.querySelectorAll('.tabs button[data-s]').forEach(b => b.classList.toggle('on', b.dataset.s === id));
+        c.classList.remove('on'); n.classList.add('on'); window.scrollTo(0, 0); }, 280);
+    } else {
+      geser(c, 0, true); geser(n, kiri ? lebar : -lebar, true);
+      setTimeout(() => { [c, n].forEach(el => { el.style.transition = 'none'; el.style.transform = ''; }); n.classList.remove('intip'); }, 280);
+    }
+  });
+})();
 document.querySelectorAll('#moreSeg button').forEach(b => b.onclick = () => {
   document.querySelectorAll('#moreSeg button').forEach(x => x.classList.toggle('on', x === b));
   ['lap', 'ren', 'aset'].forEach(m => $('m-' + m).style.display = m === b.dataset.m ? 'block' : 'none');
@@ -292,6 +385,7 @@ async function loadHome(refresh) {
     if (seq !== BOOT_SEQ) return;
     try { localStorage.setItem('keu_boot', JSON.stringify(b)); } catch (e) {}
     renderHome(b);
+    setTimeout(panaskan, 300);
   } catch (e) {
     if (HOME_ADA) { $('homeSub').textContent = 'Gagal memperbarui • data terakhir'; toast('❌ ' + e.message); }
     else { $('home').innerHTML = `<div class="card out">❌ ${esc(e.message)}</div>`; $('homeSub').textContent = ''; }
@@ -365,7 +459,7 @@ async function cari() {
   $('txBulanBox').style.display = 'none';
   $('txList').innerHTML = '<div class="loading">Mencari…</div>'; $('txSum').innerHTML = '';
   try {
-    const r = await call('apiCari', q);
+    const r = await callC('apiCari', q);
     if ($('q').value.trim() !== q) return;
     $('txSum').innerHTML = `<div class="card"><div class="muted">${r.jumlah} transaksi cocok dengan “<b>${esc(q)}</b>” (semua bulan)</div>
       <div class="grid3" style="margin-top:8px"><div class="kpi"><span>Masuk</span><b class="in">${rp(r.masuk)}</b></div>
@@ -379,7 +473,7 @@ async function loadTx(paksa) {
   const [y, m] = BULAN.tx; $('txMonth').textContent = NAMA_BLN[m - 1] + ' ' + y;
   $('txList').innerHTML = '<div class="loading">Memuat…</div>'; $('txSum').innerHTML = '';
   try {
-    const list = await call('apiTransaksi', y, m, $('txAkun').value);
+    const list = await callC('apiTransaksi', y, m, $('txAkun').value);
     const masuk = list.filter(t => t.tipe === 'Pemasukan').reduce((s, t) => s + t.jumlah, 0);
     const keluar = list.filter(t => t.tipe === 'Pengeluaran').reduce((s, t) => s + t.jumlah, 0);
     $('txSum').innerHTML = `<div class="grid2" style="margin-bottom:4px"><div class="kpi" style="background:var(--card)"><span>Masuk</span><b class="in">${rp(masuk)}</b></div><div class="kpi" style="background:var(--card)"><span>Keluar</span><b class="out">${rp(keluar)}</b></div></div>`;
@@ -411,7 +505,31 @@ async function hapusTx(id) {
 
 /* ---------- form tambah ---------- */
 function bukaSheet(id) { $('bg').classList.add('on'); $(id).classList.add('on'); }
-function tutupSheet() { $('bg').classList.remove('on'); document.querySelectorAll('.sheet').forEach(s => s.classList.remove('on')); if (document.activeElement) document.activeElement.blur(); }
+function tutupSheet() { $('bg').classList.remove('on'); document.querySelectorAll('.sheet').forEach(s => { s.classList.remove('on'); s.style.transform = ''; s.style.transition = ''; }); $('bg').style.opacity = ''; if (document.activeElement) document.activeElement.blur(); }
+/* ---------- tarik ke bawah untuk menutup sheet ---------- */
+document.querySelectorAll('.sheet').forEach(sh => {
+  let y0, t0, dy = 0, tarik = false, mulaiAtas = false;
+  sh.addEventListener('touchstart', e => {
+    y0 = e.touches[0].clientY; t0 = Date.now(); dy = 0; tarik = false;
+    mulaiAtas = sh.scrollTop <= 0;
+  }, { passive: true });
+  sh.addEventListener('touchmove', e => {
+    if (!mulaiAtas) return;
+    const d = e.touches[0].clientY - y0;
+    if (!tarik) { if (d > 8 && sh.scrollTop <= 0) { tarik = true; if (document.activeElement) document.activeElement.blur(); } else { if (d < -4) mulaiAtas = false; return; } }
+    e.preventDefault();
+    dy = Math.max(0, d);
+    sh.style.transition = 'none'; sh.style.transform = `translateY(${dy}px)`;
+    $('bg').style.opacity = String(Math.max(0, 1 - dy / (sh.offsetHeight || 600)));
+  }, { passive: false });
+  sh.addEventListener('touchend', () => {
+    if (!tarik) return; tarik = false;
+    const v = dy / Math.max(1, Date.now() - t0);
+    sh.style.transition = '';
+    if (dy > Math.min(140, sh.offsetHeight * 0.25) || (v > 0.6 && dy > 30)) tutupSheet();
+    else { sh.style.transform = ''; $('bg').style.opacity = ''; }
+  });
+});
 let EDIT_ID = null;
 function ubahTx(id) { const t = TXCACHE[id]; if (!t) return; tutupSheet(); setTimeout(() => bukaForm(t), 280); }
 function bukaForm(t) {
@@ -469,7 +587,7 @@ async function simpan() {
 /* ---------- utang ---------- */
 let UTANG = null;
 async function loadUtang() {
-  try { UTANG = await call('apiUtang'); renderUtang(); }
+  try { UTANG = await callC('apiUtang'); renderUtang(); }
   catch (e) { $('utang').innerHTML = `<div class="card out">❌ ${esc(e.message)}</div>`; }
 }
 let utangBuka = {}, lihatLunas = {};
@@ -511,7 +629,7 @@ async function loadLap() {
   const [y, m] = BULAN.lap; $('lapMonth').textContent = NAMA_BLN[m - 1] + ' ' + y;
   $('lap').innerHTML = '<div class="loading">Memuat…</div>';
   try {
-    const r = await call('apiLaporan', y, m);
+    const r = await callC('apiLaporan', y, m);
     const kel = r.per.filter(k => k.tipe === 'Pengeluaran'), mas = r.per.filter(k => k.tipe === 'Pemasukan');
     const mk = Math.max(1, ...kel.map(k => k.jumlah)), mm = Math.max(1, ...mas.map(k => k.jumlah));
     const mt = Math.max(1, ...r.tren.map(t => Math.max(t.masukRutin, t.keluarRutin)));
@@ -535,7 +653,7 @@ async function loadLap() {
 let REN = null, RENSEMUA = false;
 async function loadRen() {
   const el = $('m-ren'); if (!REN) el.innerHTML = '<div class="loading">Memuat…</div>';
-  try { REN = await call('apiRenovasi'); renderRen(); }
+  try { REN = await callC('apiRenovasi'); renderRen(); }
   catch (e) { el.innerHTML = `<div class="card out">❌ ${esc(e.message)}</div>`; }
 }
 function renderRen() {
@@ -581,7 +699,7 @@ async function simpanRen(row, val) {
 async function loadAset() {
   const el = $('m-aset'); el.innerHTML = '<div class="loading">Memuat…</div>';
   try {
-    const r = await call('apiAset');
+    const r = await callC('apiAset');
     el.innerHTML = `
       <div class="card hero"><div class="lbl">Kekayaan Bersih</div><div class="big">${rpS(r.netWorth)}</div>
         <div class="row"><div><span class="lbl">Total Aset</span><b>${rpS(r.totalAset)}</b></div><div><span class="lbl">Rasio Utang</span><b>${(r.rasio * 100).toFixed(1).replace('.', ',')}%</b></div></div></div>
