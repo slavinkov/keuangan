@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Keuangan">
+<meta name="robots" content="noindex, nofollow">
+<title>Keuangan Anadera</title>
+<link rel="apple-touch-icon" href="data:image/png;base64,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">
+
+<meta name="theme-color" content="#1F3A5F">
+<style>
+  :root { --navy:#1F3A5F; --teal:#2A9D8F; --green:#1B7F3B; --red:#C0392B; --blue:#1565C0; --orange:#E67E22;
+          --bg:#F3F5F8; --card:#fff; --line:#E6E9EE; --muted:#6B7280; --text:#1F2937; }
+  * { box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  html,body { margin:0; background:var(--bg); color:var(--text); font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',Roboto,Arial,sans-serif; font-size:15px; }
+  body { padding-bottom:calc(84px + env(safe-area-inset-bottom)); }
+  .top { position:sticky; top:0; z-index:5; background:var(--bg); padding:calc(14px + env(safe-area-inset-top)) 16px 8px; display:flex; align-items:center; justify-content:space-between; }
+  .top h1 { margin:0; font-size:24px; font-weight:800; letter-spacing:-.3px; }
+  .top .sub { font-size:12px; color:var(--muted); margin-top:2px; }
+  .icon-btn { border:0; background:#fff; width:36px; height:36px; border-radius:50%; font-size:16px; box-shadow:0 1px 3px rgba(0,0,0,.08); }
+  .wrap { padding:0 16px 16px; }
+  .card { background:var(--card); border-radius:16px; padding:14px 16px; margin-bottom:12px; box-shadow:0 1px 2px rgba(16,24,40,.05); }
+  .card h3 { margin:0 0 10px; font-size:13px; text-transform:uppercase; letter-spacing:.4px; color:var(--muted); font-weight:700; display:flex; justify-content:space-between; }
+  .hero { background:linear-gradient(135deg,#1F3A5F,#2A6F97); color:#fff; }
+  .hero .lbl { font-size:12px; opacity:.8; text-transform:uppercase; letter-spacing:.5px; }
+  .hero .big { font-size:30px; font-weight:800; margin:4px 0 12px; letter-spacing:-.5px; }
+  .hero .row { display:flex; gap:10px; } .hero .row > div { flex:1; background:rgba(255,255,255,.12); border-radius:12px; padding:8px 10px; }
+  .hero .row b { display:block; font-size:15px; margin-top:2px; }
+  .grid3 { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; }
+  .grid2 { display:grid; grid-template-columns:repeat(2,1fr); gap:8px; }
+  .kpi { background:#F7F8FA; border-radius:12px; padding:9px 10px; }
+  .kpi > span { font-size:11px; color:var(--muted); display:block; } .kpi b { font-size:15px; }
+  .in { color:var(--green); } .out { color:var(--red); } .tf { color:var(--blue); }
+  .list .it { display:flex; align-items:center; padding:10px 0; border-bottom:1px solid var(--line); gap:10px; }
+  .list .it:last-child { border-bottom:0; }
+  .ic { width:36px; height:36px; border-radius:10px; background:#F1F3F6; display:flex; align-items:center; justify-content:center; font-size:18px; flex:none; }
+  .grow { flex:1; min-width:0; } .t1 { font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; } .t2 { font-size:12px; color:var(--muted); margin-top:1px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .amt { font-weight:700; white-space:nowrap; text-align:right; }
+  .bar { height:8px; background:#EEF0F3; border-radius:6px; overflow:hidden; margin-top:6px; }
+  .bar i { display:block; height:100%; border-radius:6px; background:var(--teal); }
+  .muted { color:var(--muted); font-size:12px; }
+  .tabs { position:fixed; left:0; right:0; bottom:0; background:rgba(255,255,255,.96); backdrop-filter:blur(10px); border-top:1px solid var(--line);
+          display:flex; padding:6px 6px calc(6px + env(safe-area-inset-bottom)); z-index:10; }
+  .tabs button { flex:1; border:0; background:none; font-size:10.5px; color:#9CA3AF; display:flex; flex-direction:column; align-items:center; gap:2px; padding:4px 0; font-weight:600; }
+  .tabs button .e { font-size:20px; filter:grayscale(1); opacity:.6; }
+  .tabs button.on { color:var(--navy); } .tabs button.on .e { filter:none; opacity:1; }
+  .tabs .plus .e { background:var(--navy); color:#fff; width:46px; height:46px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:26px; margin-top:-18px; box-shadow:0 4px 12px rgba(31,58,95,.35); filter:none; opacity:1; }
+  .screen { display:none; } .screen.on { display:block; }
+  .monthnav { display:flex; align-items:center; justify-content:space-between; background:#fff; border-radius:12px; padding:6px; margin-bottom:12px; }
+  .monthnav button { border:0; background:#F1F3F6; width:34px; height:34px; border-radius:10px; font-size:16px; }
+  .monthnav b { font-size:15px; }
+  .seg { display:flex; background:#E9ECF1; border-radius:12px; padding:3px; margin-bottom:12px; }
+  .seg button { flex:1; border:0; background:transparent; padding:8px 4px; border-radius:10px; font-weight:700; color:var(--muted); font-size:13px; }
+  .seg button.on { background:#fff; color:var(--navy); box-shadow:0 1px 3px rgba(0,0,0,.1); }
+  .seg.tipe button.on[data-t=Pengeluaran] { color:var(--red); } .seg.tipe button.on[data-t=Pemasukan] { color:var(--green); } .seg.tipe button.on[data-t=Transfer] { color:var(--blue); }
+  select, input { width:100%; padding:12px; border:1px solid var(--line); border-radius:12px; font-size:16px; background:#fff; color:var(--text); -webkit-appearance:none; }
+  label { display:block; font-size:12px; font-weight:700; color:var(--muted); margin:12px 0 6px; text-transform:uppercase; letter-spacing:.3px; }
+  .amount { font-size:30px; font-weight:800; text-align:right; padding:14px; }
+  .chips { display:flex; flex-wrap:wrap; gap:7px; }
+  .chip { border:1px solid var(--line); border-radius:18px; padding:7px 11px; font-size:13px; background:#fff; }
+  .chip.on { background:var(--navy); color:#fff; border-color:var(--navy); }
+  .btn { width:100%; border:0; border-radius:14px; padding:15px; font-size:16px; font-weight:800; background:var(--navy); color:#fff; margin-top:16px; }
+  .btn.red { background:#FDECEA; color:var(--red); } .btn.ghost { background:#EEF0F3; color:var(--text); margin-top:8px; }
+  .btn:disabled { opacity:.5; }
+  .sheet-bg { position:fixed; inset:0; background:rgba(0,0,0,.35); z-index:20; display:none; }
+  .sheet { position:fixed; left:0; right:0; bottom:0; background:var(--bg); border-radius:20px 20px 0 0; z-index:21; max-height:92vh; overflow-y:auto;
+           padding:10px 16px calc(20px + env(safe-area-inset-bottom)); transform:translateY(100%); transition:transform .25s ease, visibility .25s; visibility:hidden; }
+  .sheet.on { transform:none; visibility:visible; } .sheet-bg.on { display:block; }
+  .grab { width:40px; height:5px; border-radius:3px; background:#CBD2DB; margin:0 auto 10px; }
+  .sheet h2 { margin:4px 0 12px; font-size:20px; }
+  .toast { position:fixed; left:16px; right:16px; bottom:calc(92px + env(safe-area-inset-bottom)); background:#1F2937; color:#fff; border-radius:14px; padding:12px 14px;
+           font-size:13px; white-space:pre-line; z-index:30; display:none; box-shadow:0 6px 20px rgba(0,0,0,.25); }
+  .pill { font-size:11px; font-weight:700; padding:4px 9px; border-radius:20px; border:0; }
+  .pill.lunas { background:#E3F4E8; color:var(--green); } .pill.belum { background:#FFF4CC; color:#8A6D00; } .pill.telat { background:#FDE2E1; color:var(--red); }
+  .loading { text-align:center; color:var(--muted); padding:40px 0; }
+  .dategrp { font-size:12px; font-weight:700; color:var(--muted); margin:14px 2px 4px; }
+  .tren { display:flex; align-items:flex-end; gap:8px; height:130px; padding-top:6px; }
+  .tren .col { flex:1; display:flex; flex-direction:column; align-items:center; gap:4px; height:100%; justify-content:flex-end; }
+  .tren .bars { display:flex; gap:3px; align-items:flex-end; height:100%; width:100%; justify-content:center; }
+  .tren .bars i { width:40%; border-radius:4px 4px 0 0; display:block; }
+  .tren small { font-size:11px; color:var(--muted); }
+  .legend { display:flex; gap:12px; font-size:12px; color:var(--muted); margin-top:8px; }
+  .legend i { display:inline-block; width:10px; height:10px; border-radius:3px; margin-right:4px; vertical-align:-1px; }
+  .login { padding:calc(60px + env(safe-area-inset-top)) 24px; text-align:center; }
+  .login .logo { font-size:56px; } .login h1 { margin:8px 0 4px; }
+  a.btn { display:block; text-decoration:none; text-align:center; }
+  .acts { display:flex; gap:8px; }
+  .icon-btn { display:flex; align-items:center; justify-content:center; color:var(--navy); }
+  .m { transition:filter .15s; }
+  body.hide .m { filter:blur(7px); user-select:none; -webkit-user-select:none; }
+</style>
+</head>
+<body>
+<div class="login" id="login" style="display:none">
+  <div class="logo"><img id="logoImg" alt="" width="72" height="72" style="border-radius:18px"></div>
+  <h1>Keuangan Anadera</h1>
+  <p class="muted">Masukkan token (API_TOKEN dari Apps Script → Project Settings → Script Properties). Cukup sekali di perangkat ini.</p>
+  <input id="tok" placeholder="Token" autocomplete="off" autocapitalize="off" spellcheck="false">
+  <button class="btn" id="go" onclick="masuk()">Masuk</button>
+  <p class="muted" id="loginMsg" style="margin-top:12px"></p>
+  <p class="muted" style="margin-top:18px">Di iPhone: Safari → Share → <b>Add to Home Screen</b>.</p>
+</div>
+<div id="app">
+
+<!-- ============ BERANDA ============ -->
+<section class="screen on" id="s-home">
+  <div class="top"><div><h1>Keuangan</h1><div class="sub" id="homeSub">Memuat…</div></div><div class="acts"><button class="icon-btn eye" onclick="toggleHide()" aria-label="Sembunyikan saldo"></button><button class="icon-btn" onclick="loadHome(true)">↻</button></div></div>
+  <div class="wrap" id="home"><div class="loading">Memuat data…</div></div>
+</section>
+
+<!-- ============ TRANSAKSI ============ -->
+<section class="screen" id="s-tx">
+  <div class="top"><div><h1>Transaksi</h1><div class="sub">Ketuk transaksi untuk melihat / menghapus</div></div><button class="icon-btn eye" onclick="toggleHide()" aria-label="Sembunyikan saldo"></button></div>
+  <div class="wrap">
+    <div class="monthnav"><button onclick="geserBulan('tx',-1)">‹</button><b id="txMonth"></b><button onclick="geserBulan('tx',1)">›</button></div>
+    <select id="txAkun" onchange="loadTx()"><option value="">Semua akun</option></select>
+    <div style="height:12px"></div>
+    <div id="txSum"></div>
+    <div id="txList"><div class="loading">Memuat…</div></div>
+  </div>
+</section>
+
+<!-- ============ UTANG ============ -->
+<section class="screen" id="s-utang">
+  <div class="top"><div><h1>Utang</h1><div class="sub">Ketuk utang untuk melihat jadwal cicilan</div></div><button class="icon-btn eye" onclick="toggleHide()" aria-label="Sembunyikan saldo"></button></div>
+  <div class="wrap" id="utang"><div class="loading">Memuat…</div></div>
+</section>
+
+<!-- ============ LAINNYA ============ -->
+<section class="screen" id="s-more">
+  <div class="top"><div><h1 id="moreTitle">Laporan</h1></div><button class="icon-btn eye" onclick="toggleHide()" aria-label="Sembunyikan saldo"></button></div>
+  <div class="wrap">
+    <div class="seg" id="moreSeg">
+      <button data-m="lap" class="on">📊 Laporan</button><button data-m="ren">🔨 Renovasi</button><button data-m="aset">🏛️ Aset</button>
+    </div>
+    <div id="m-lap">
+      <div class="monthnav"><button onclick="geserBulan('lap',-1)">‹</button><b id="lapMonth"></b><button onclick="geserBulan('lap',1)">›</button></div>
+      <div id="lap"><div class="loading">Memuat…</div></div>
+    </div>
+    <div id="m-ren" style="display:none"><div class="loading">Memuat…</div></div>
+    <div id="m-aset" style="display:none"><div class="loading">Memuat…</div></div>
+  </div>
+</section>
+
+<!-- ============ TAB BAR ============ -->
+<nav class="tabs">
+  <button data-s="home" class="on"><span class="e">🏠</span>Beranda</button>
+  <button data-s="tx"><span class="e">🧾</span>Transaksi</button>
+  <button class="plus" onclick="bukaForm()"><span class="e">+</span>Tambah</button>
+  <button data-s="utang"><span class="e">🏦</span>Utang</button>
+  <button data-s="more"><span class="e">📊</span>Lainnya</button>
+</nav>
+
+<!-- ============ FORM TAMBAH ============ -->
+<div class="sheet-bg" id="bg" onclick="tutupSheet()"></div>
+<div class="sheet" id="form">
+  <div class="grab"></div>
+  <h2>Tambah Transaksi</h2>
+  <div class="seg tipe" id="fTipe">
+    <button data-t="Pengeluaran" class="on">💸 Keluar</button><button data-t="Pemasukan">💰 Masuk</button><button data-t="Transfer">🔁 Transfer</button>
+  </div>
+  <input id="fJumlah" class="amount" inputmode="numeric" placeholder="Rp0" autocomplete="off">
+  <label>Tanggal</label><input id="fTgl" type="date">
+  <label id="fLblAkun">Bayar dari akun</label><select id="fAkun"></select>
+  <div id="fBoxTujuan" style="display:none"><label>Ke akun</label><select id="fTujuan"></select></div>
+  <div id="fBoxKat"><label>Kategori</label><div class="chips" id="fKat"></div></div>
+  <div id="fBoxUtang" style="display:none"><label>Bayar utang</label><select id="fUtang"></select>
+    <div class="muted" style="margin-top:4px">Cicilan "Belum" paling awal akan otomatis ditandai Lunas.</div></div>
+  <label>Catatan</label><input id="fCatatan" placeholder="mis. Makan siang" autocomplete="off">
+  <button class="btn" id="fSimpan" onclick="simpan()">Simpan</button>
+  <button class="btn ghost" onclick="tutupSheet()">Batal</button>
+</div>
+
+<!-- ============ DETAIL TRANSAKSI ============ -->
+<div class="sheet" id="detail"><div class="grab"></div><div id="detailBody"></div></div>
+
+<div class="toast" id="toast"></div>
+
+</div>
+<script>
+const API_URL = 'https://script.google.com/macros/s/AKfycbxaS_sipkeyFVf9-Q0m5FW-iA2_EB-9V3U6-72NfmoUELNrZ8JjXDkCiloAVNQrWinu/exec';
+let TK = ''; try { TK = localStorage.getItem('keu_token') || ''; } catch (e) {}
+let INIT = null, fTipe = 'Pengeluaran', fKat = '';
+const now = new Date();
+const BULAN = { tx: [now.getFullYear(), now.getMonth() + 1], lap: [now.getFullYear(), now.getMonth() + 1] };
+const NAMA_BLN = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+const $ = id => document.getElementById(id);
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const rpT = n => (n < 0 ? '-' : '') + 'Rp' + Math.round(Math.abs(n)).toLocaleString('id-ID');
+const rp = n => '<span class="m">' + rpT(n) + '</span>';
+const rpS = n => { const a = Math.abs(n), s = n < 0 ? '-' : '';
+  if (a >= 1e9) return '<span class="m">' + s + 'Rp' + (a / 1e9).toFixed(2).replace('.', ',') + ' M</span>';
+  if (a >= 1e6) return '<span class="m">' + s + 'Rp' + (a / 1e6).toFixed(1).replace('.', ',') + ' jt</span>';
+  return rp(n); };
+const EYE_ON = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>', EYE_OFF = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><path d="M14.12 14.12a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>';
+let HIDE = false; try { HIDE = localStorage.getItem('keu_hide') === '1'; } catch (e) {}
+function terapkanHide() {
+  document.body.classList.toggle('hide', HIDE);
+  document.querySelectorAll('.eye').forEach(b => { b.innerHTML = HIDE ? EYE_OFF : EYE_ON; b.setAttribute('aria-label', HIDE ? 'Tampilkan saldo' : 'Sembunyikan saldo'); });
+}
+function toggleHide() { HIDE = !HIDE; try { localStorage.setItem('keu_hide', HIDE ? '1' : '0'); } catch (e) {} terapkanHide(); }
+const tglID = s => { if (!s) return ''; const [y, m, d] = s.split('-'); return +d + ' ' + NAMA_BLN[+m - 1].slice(0, 3) + ' ' + y; };
+const pct = x => Math.max(0, Math.min(100, Math.round(x * 100)));
+async function call(fn, ...args) {
+  let r;
+  try {
+    r = await fetch(API_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                               body: JSON.stringify({ token: TK, api: fn, args }) });
+  } catch (e) { throw new Error('Tidak bisa terhubung. Cek koneksi internet.'); }
+  const j = await r.json();
+  if (!j.ok) { if (/Token salah/.test(j.error || j.pesan || '')) { keluar(true); } throw new Error(j.error || j.pesan || 'Gagal'); }
+  return j.data;
+}
+function tampilLogin(msg) {
+  const ic = document.querySelector('link[rel=apple-touch-icon]'); if (ic) $('logoImg').src = ic.href;
+  $('login').style.display = 'block'; $('app').style.display = 'none'; document.querySelector('.tabs').style.display = 'none';
+  $('loginMsg').textContent = msg || '';
+}
+async function masuk() {
+  const t = $('tok').value.trim(); if (!t) return;
+  TK = t; $('go').disabled = true; $('loginMsg').textContent = 'Memeriksa…';
+  try { await call('apiInit'); try { localStorage.setItem('keu_token', t); } catch (e) {}
+        $('login').style.display = 'none'; $('app').style.display = 'block'; document.querySelector('.tabs').style.display = 'flex'; loadHome(); }
+  catch (e) { $('loginMsg').textContent = '❌ ' + e.message; }
+  $('go').disabled = false;
+}
+function keluar(salah) {
+  try { localStorage.removeItem('keu_token'); } catch (e) {}
+  TK = ''; tampilLogin(salah ? 'Token tidak valid / sudah diganti. Masukkan token baru.' : 'Anda sudah keluar dari perangkat ini.');
+}
+function toast(msg, ms) { const t = $('toast'); t.textContent = msg; t.style.display = 'block'; clearTimeout(t._h); t._h = setTimeout(() => t.style.display = 'none', ms || 3500); }
+function ikonKat(nama, tipe) { const k = INIT && INIT.kategori.find(x => x.nama === nama && (!tipe || x.tipe === tipe)); return k ? k.ikon : (tipe === 'Transfer' ? '🔁' : '•'); }
+
+/* ---------- navigasi ---------- */
+document.querySelectorAll('.tabs button[data-s]').forEach(b => b.onclick = () => buka(b.dataset.s));
+function buka(s) {
+  document.querySelectorAll('.tabs button[data-s]').forEach(b => b.classList.toggle('on', b.dataset.s === s));
+  document.querySelectorAll('.screen').forEach(x => x.classList.toggle('on', x.id === 's-' + s));
+  window.scrollTo(0, 0);
+  if (s === 'tx') loadTx(); if (s === 'utang') loadUtang(); if (s === 'more') loadMore();
+}
+document.querySelectorAll('#moreSeg button').forEach(b => b.onclick = () => {
+  document.querySelectorAll('#moreSeg button').forEach(x => x.classList.toggle('on', x === b));
+  ['lap', 'ren', 'aset'].forEach(m => $('m-' + m).style.display = m === b.dataset.m ? 'block' : 'none');
+  $('moreTitle').textContent = b.textContent.slice(2).trim(); loadMore();
+});
+function curMore() { return document.querySelector('#moreSeg button.on').dataset.m; }
+function geserBulan(k, d) { let [y, m] = BULAN[k]; m += d; if (m < 1) { m = 12; y--; } if (m > 12) { m = 1; y++; } BULAN[k] = [y, m]; k === 'tx' ? loadTx() : loadLap(); }
+
+/* ---------- beranda ---------- */
+async function loadHome(refresh) {
+  if (refresh) $('homeSub').textContent = 'Memperbarui…';
+  try {
+    const [d, init] = await Promise.all([call('apiDashboard'), call('apiInit')]);
+    INIT = init; isiAkunSelect();
+    $('homeSub').textContent = 'Per ' + tglID(init.hariIni);
+    const akun = init.akun.filter(a => a.aktif).sort((a, b) => b.saldo - a.saldo);
+    const totalAkun = akun.reduce((s, a) => s + a.saldo, 0);
+    const totalSaldo = init.akun.reduce((s, a) => s + a.saldo, 0);
+    const maxTop = Math.max(1, ...d.top.map(t => t.jumlah));
+    let h = `
+      <div class="card hero"><div class="lbl">Kekayaan Bersih</div><div class="big">${rpS(d.netWorth)}</div>
+        <div class="row"><div><span class="lbl">Total Aset</span><b>${rpS(d.totalAset)}</b></div><div><span class="lbl">Sisa Utang</span><b>${rpS(d.sisaUtang)}</b></div></div></div>
+      <div class="card"><div class="muted" style="text-transform:uppercase;letter-spacing:.4px;font-weight:700">Total Saldo <span style="font-weight:400;text-transform:none">(semua akun, tanpa aset)</span></div><div style="font-size:26px;font-weight:800;color:var(--teal);margin-top:4px">${rp(totalSaldo)}</div><div class="t2">${init.akun.filter(a => a.saldo).length} akun berisi saldo</div></div>
+      <div class="card"><h3><span>${NAMA_BLN[now.getMonth()]} ${now.getFullYear()}</span></h3>
+        <div class="grid3">
+          <div class="kpi"><span>Masuk</span><b class="in">${rpS(d.bulan.masuk)}</b></div>
+          <div class="kpi"><span>Keluar</span><b class="out">${rpS(d.bulan.keluar)}</b></div>
+          <div class="kpi"><span>Keluar rutin</span><b class="out">${rpS(d.bulan.keluarRutin)}</b></div>
+        </div>
+        <div class="muted" style="margin-top:8px">Selisih: <b class="${d.bulan.masuk - d.bulan.keluar >= 0 ? 'in' : 'out'}">${rp(d.bulan.masuk - d.bulan.keluar)}</b></div></div>
+      <div class="card"><h3><span>Saldo Akun</span><span>${rpS(totalAkun)}</span></h3><div class="list">
+        ${akun.map(a => `<div class="it"><div class="grow"><div class="t1">${esc(a.nama)}</div><div class="t2">${esc(a.bank)}</div></div><div class="amt">${rp(a.saldo)}</div></div>`).join('')}
+      </div></div>`;
+    if (d.top.length) h += `<div class="card"><h3><span>Top Pengeluaran Bulan Ini</span></h3><div class="list">
+        ${d.top.map(t => `<div class="it"><div class="ic">${t.ikon}</div><div class="grow"><div style="display:flex;justify-content:space-between"><span class="t1">${esc(t.nama)}</span><span class="amt">${rp(t.jumlah)}</span></div>
+          <div class="bar"><i style="width:${pct(t.jumlah / maxTop)}%;background:${t.budget && t.jumlah > t.budget ? 'var(--red)' : 'var(--teal)'}"></i></div>
+          ${t.budget ? `<div class="t2">Budget ${rp(t.budget)}</div>` : ''}</div></div>`).join('')}</div></div>`;
+    h += `<div class="card" onclick="buka('utang')"><h3><span>Utang</span><span>›</span></h3>
+        ${d.utang.map(u => `<div style="margin-bottom:10px"><div style="display:flex;justify-content:space-between"><b>${esc(u.nama)}</b><span class="amt out">${rpS(u.sisa)}</span></div>
+          <div class="bar"><i style="width:${pct(u.progress)}%;background:var(--red)"></i></div>
+          <div class="t2">${pct(u.progress)}% lunas${u.next ? ' • berikutnya ' + tglID(u.next) + ' ' + rp(u.nextAmt) : ''}</div></div>`).join('') || '<div class="muted">Tidak ada utang berjalan 🎉</div>'}</div>
+      <div class="card" onclick="bukaMore('ren')"><h3><span>Renovasi Rumah</span><span>›</span></h3>
+        <div style="display:flex;justify-content:space-between"><span>Dibayar ${rpS(d.renov.dibayar)} / ${rpS(d.renov.total)}</span><b>${pct(d.renov.progress)}%</b></div>
+        <div class="bar"><i style="width:${pct(d.renov.progress)}%;background:var(--orange)"></i></div>
+        <div class="t2" style="margin-top:6px">Sisa ${rp(d.renov.sisa)} • Dana ${d.renov.selisihDana >= 0 ? 'lebih' : 'kurang'} <b class="${d.renov.selisihDana >= 0 ? 'in' : 'out'}">${rp(Math.abs(d.renov.selisihDana))}</b></div></div>
+      <div class="card"><h3><span>Transaksi Terakhir</span><span onclick="buka('tx')">Semua ›</span></h3><div class="list">${d.terakhir.map(itemTx).join('')}</div></div>`;
+    $('home').innerHTML = h;
+  } catch (e) { $('home').innerHTML = `<div class="card out">❌ ${esc(e.message)}</div>`; $('homeSub').textContent = ''; }
+}
+function bukaMore(m) { buka('more'); document.querySelector(`#moreSeg button[data-m=${m}]`).click(); }
+
+/* ---------- transaksi ---------- */
+let TXCACHE = {};
+function itemTx(t) {
+  TXCACHE[t.id] = t;
+  const cls = t.tipe === 'Pemasukan' ? 'in' : t.tipe === 'Pengeluaran' ? 'out' : 'tf';
+  const sign = t.tipe === 'Pemasukan' ? '+' : t.tipe === 'Pengeluaran' ? '−' : '';
+  const sub = t.tipe === 'Transfer' ? `${t.akun} → ${t.tujuan}` : `${t.kat} • ${t.akun}`;
+  return `<div class="it" onclick="detailTx('${esc(t.id)}')"><div class="ic">${ikonKat(t.kat, t.tipe)}</div><div class="grow"><div class="t1">${esc(t.catatan || t.kat || t.tipe)}</div><div class="t2">${esc(sub)}</div></div><div class="amt ${cls}">${sign}${rp(t.jumlah)}</div></div>`;
+}
+function isiAkunSelect() {
+  const sel = $('txAkun'), cur = sel.value;
+  sel.innerHTML = '<option value="">Semua akun</option>' + INIT.akun.map(a => `<option>${esc(a.nama)}</option>`).join('');
+  sel.value = cur;
+}
+async function loadTx() {
+  const [y, m] = BULAN.tx; $('txMonth').textContent = NAMA_BLN[m - 1] + ' ' + y;
+  $('txList').innerHTML = '<div class="loading">Memuat…</div>'; $('txSum').innerHTML = '';
+  try {
+    const list = await call('apiTransaksi', y, m, $('txAkun').value);
+    const masuk = list.filter(t => t.tipe === 'Pemasukan').reduce((s, t) => s + t.jumlah, 0);
+    const keluar = list.filter(t => t.tipe === 'Pengeluaran').reduce((s, t) => s + t.jumlah, 0);
+    $('txSum').innerHTML = `<div class="grid2" style="margin-bottom:4px"><div class="kpi" style="background:#fff"><span>Masuk</span><b class="in">${rp(masuk)}</b></div><div class="kpi" style="background:#fff"><span>Keluar</span><b class="out">${rp(keluar)}</b></div></div>`;
+    if (!list.length) { $('txList').innerHTML = '<div class="card muted">Belum ada transaksi di bulan ini.</div>'; return; }
+    const grp = {}; list.forEach(t => (grp[t.tgl] = grp[t.tgl] || []).push(t));
+    $('txList').innerHTML = Object.keys(grp).map(d => `<div class="dategrp">${tglID(d)}</div><div class="card list" style="padding:2px 14px">${grp[d].map(itemTx).join('')}</div>`).join('');
+  } catch (e) { $('txList').innerHTML = `<div class="card out">❌ ${esc(e.message)}</div>`; }
+}
+function detailTx(id) {
+  const t = TXCACHE[id]; if (!t) return;
+  const cls = t.tipe === 'Pemasukan' ? 'in' : t.tipe === 'Pengeluaran' ? 'out' : 'tf';
+  $('detailBody').innerHTML = `<h2>${ikonKat(t.kat, t.tipe)} ${esc(t.catatan || t.kat || t.tipe)}</h2>
+    <div class="card"><div style="font-size:28px;font-weight:800" class="${cls}">${rp(t.jumlah)}</div>
+    <div class="list" style="margin-top:6px">
+      <div class="it"><div class="grow muted">Tanggal</div><div>${tglID(t.tgl)}</div></div>
+      <div class="it"><div class="grow muted">Tipe</div><div>${esc(t.tipe)}</div></div>
+      <div class="it"><div class="grow muted">${t.tipe === 'Transfer' ? 'Dari' : 'Akun'}</div><div>${esc(t.akun)}</div></div>
+      ${t.tipe === 'Transfer' ? `<div class="it"><div class="grow muted">Ke</div><div>${esc(t.tujuan)}</div></div>` : `<div class="it"><div class="grow muted">Kategori</div><div>${esc(t.kat)}</div></div>`}
+      <div class="it"><div class="grow muted">Sumber</div><div>${esc(t.sumber)}</div></div>
+    </div></div>
+    <button class="btn red" onclick="hapusTx('${esc(t.id)}')">🗑️ Hapus transaksi ini</button>
+    <button class="btn ghost" onclick="tutupSheet()">Tutup</button>
+    <div class="muted" style="margin-top:10px;text-align:center">Untuk mengubah: hapus lalu input ulang, atau edit di Google Sheets.</div>`;
+  bukaSheet('detail');
+}
+async function hapusTx(id) {
+  if (!confirm('Hapus transaksi ini? Saldo akan dihitung ulang.')) return;
+  try { await call('apiHapus', id); tutupSheet(); toast('🗑️ Transaksi dihapus'); loadTx(); loadHome(); }
+  catch (e) { toast('❌ ' + e.message); }
+}
+
+/* ---------- form tambah ---------- */
+function bukaSheet(id) { $('bg').classList.add('on'); $(id).classList.add('on'); }
+function tutupSheet() { $('bg').classList.remove('on'); document.querySelectorAll('.sheet').forEach(s => s.classList.remove('on')); }
+function bukaForm() {
+  if (!INIT) return toast('Tunggu data selesai dimuat…');
+  const akun = INIT.akun.filter(a => a.aktif);
+  const opt = akun.map(a => `<option value="${esc(a.nama)}">${esc(a.nama)} — ${HIDE ? 'Rp ••••••' : rpT(a.saldo)}</option>`).join('');
+  const ka = $('fAkun').value, kt = $('fTujuan').value;
+  $('fAkun').innerHTML = opt; $('fTujuan').innerHTML = opt;
+  $('fAkun').value = ka || akun[0].nama; $('fTujuan').value = kt || (akun[1] || akun[0]).nama;
+  $('fUtang').innerHTML = INIT.utang.map(u => `<option>${esc(u)}</option>`).join('');
+  if (!$('fTgl').value) $('fTgl').value = INIT.hariIni;
+  renderForm(); bukaSheet('form'); setTimeout(() => $('fJumlah').focus(), 250);
+}
+document.querySelectorAll('#fTipe button').forEach(b => b.onclick = () => { fTipe = b.dataset.t; renderForm(); });
+function renderForm() {
+  document.querySelectorAll('#fTipe button').forEach(b => b.classList.toggle('on', b.dataset.t === fTipe));
+  const tf = fTipe === 'Transfer';
+  $('fBoxTujuan').style.display = tf ? 'block' : 'none'; $('fBoxKat').style.display = tf ? 'none' : 'block';
+  $('fLblAkun').textContent = tf ? 'Dari akun' : fTipe === 'Pemasukan' ? 'Masuk ke akun' : 'Bayar dari akun';
+  $('fSimpan').textContent = tf ? 'Simpan Transfer' : fTipe === 'Pemasukan' ? 'Simpan Pemasukan' : 'Simpan Pengeluaran';
+  const list = INIT.kategori.filter(k => k.tipe === fTipe);
+  if (!list.find(k => k.nama === fKat)) fKat = '';
+  $('fKat').innerHTML = list.map(k => `<span class="chip ${k.nama === fKat ? 'on' : ''}" data-k="${esc(k.nama)}">${k.ikon} ${esc(k.nama)}</span>`).join('');
+  document.querySelectorAll('#fKat .chip').forEach(c => c.onclick = () => { fKat = c.dataset.k; renderForm(); });
+  $('fBoxUtang').style.display = !tf && fKat === 'Cicilan Utang' && INIT.utang.length ? 'block' : 'none';
+}
+$('fJumlah').addEventListener('input', e => { const n = e.target.value.replace(/[^0-9]/g, ''); e.target.value = n ? 'Rp' + Number(n).toLocaleString('id-ID') : ''; });
+async function simpan() {
+  const d = { tipe: fTipe, tanggal: $('fTgl').value, akun: $('fAkun').value,
+    akunTujuan: fTipe === 'Transfer' ? $('fTujuan').value : '', kategori: fTipe === 'Transfer' ? '' : fKat,
+    utang: fKat === 'Cicilan Utang' ? $('fUtang').value : '', jumlah: $('fJumlah').value, catatan: $('fCatatan').value };
+  if (!d.jumlah) return toast('Isi jumlah dulu');
+  if (fTipe !== 'Transfer' && !d.kategori) return toast('Pilih kategori dulu');
+  if (fTipe === 'Transfer' && d.akun === d.akunTujuan) return toast('Akun asal & tujuan tidak boleh sama');
+  $('fSimpan').disabled = true;
+  try {
+    const r = await call('apiSimpan', d);
+    $('fJumlah').value = ''; $('fCatatan').value = ''; fKat = '';
+    tutupSheet(); toast(HIDE ? r.pesan.replace(/Rp[\d.]+/g, 'Rp ••••') : r.pesan, 5000); loadHome();
+    if ($('s-tx').classList.contains('on')) loadTx();
+    if ($('s-utang').classList.contains('on')) loadUtang();
+  } catch (e) { toast('❌ ' + e.message, 5000); }
+  $('fSimpan').disabled = false;
+}
+
+/* ---------- utang ---------- */
+let UTANG = null;
+async function loadUtang() {
+  try { UTANG = await call('apiUtang'); renderUtang(); }
+  catch (e) { $('utang').innerHTML = `<div class="card out">❌ ${esc(e.message)}</div>`; }
+}
+let utangBuka = {}, lihatLunas = {};
+function renderUtang() {
+  const today = INIT ? INIT.hariIni : '';
+  const total = UTANG.utang.reduce((s, u) => s + u.sisa, 0);
+  let h = `<div class="card hero"><div class="lbl">Total Sisa Utang</div><div class="big">${rpS(total)}</div></div>`;
+  UTANG.utang.forEach(u => {
+    const j = UTANG.jadwal.filter(r => r.utang === u.nama);
+    const open = utangBuka[u.nama];
+    h += `<div class="card"><div onclick="utangBuka['${esc(u.nama)}']=!utangBuka['${esc(u.nama)}'];renderUtang()">
+      <div style="display:flex;justify-content:space-between;align-items:center"><div><b style="font-size:17px">${esc(u.nama)}</b><div class="t2">${esc(u.pemberi)}</div></div>
+      <div style="text-align:right"><div class="amt ${u.sisa ? 'out' : 'in'}">${u.sisa ? rp(u.sisa) : 'Lunas ✅'}</div><div class="t2">dari ${rp(u.total)}</div></div></div>
+      <div class="bar"><i style="width:${pct(u.progress)}%;background:${u.sisa ? 'var(--red)' : 'var(--green)'}"></i></div>
+      <div class="t2" style="margin-top:6px">${pct(u.progress)}% lunas${u.next ? ' • berikutnya ' + tglID(u.next) + ' • ' + rp(u.nextAmt) : ''}${u.lunasPada && u.sisa ? ' • selesai ' + tglID(u.lunasPada) : ''} <span style="float:right">${open ? '▲' : '▼'}</span></div></div>
+      ${open ? `<div class="list" style="margin-top:8px">${(() => { const lunas = j.filter(r => r.status === 'Lunas'), belum = j.filter(r => r.status !== 'Lunas');
+        const tampil = lihatLunas[u.nama] ? j : belum.concat(lunas.slice(-1)).sort((a, b) => a.due < b.due ? -1 : 1);
+        return (lunas.length > 1 ? `<div class="t2" style="padding:6px 0" onclick="event.stopPropagation();lihatLunas['${esc(u.nama)}']=!lihatLunas['${esc(u.nama)}'];renderUtang()">${lihatLunas[u.nama] ? '▲ Sembunyikan' : '▼ Tampilkan'} ${lunas.length} cicilan lunas</div>` : '') + tampil.map(r => {
+        const telat = r.status === 'Belum' && r.due < today;
+        return `<div class="it"><div class="grow"><div class="t1">${esc(r.periode)}</div><div class="t2">Jatuh tempo ${tglID(r.due)}${r.bayar ? ' • dibayar ' + tglID(r.bayar) : ''}</div></div>
+          <div class="amt" style="font-weight:600">${rp(r.jumlah)}</div>
+          <button class="pill ${r.status === 'Lunas' ? 'lunas' : telat ? 'telat' : 'belum'}" onclick="toggleCicilan(event,${r.row},'${r.status}')">${r.status === 'Lunas' ? 'Lunas' : telat ? 'Telat' : 'Belum'}</button></div>`; }).join(''); })()}</div>` : ''}
+    </div>`;
+  });
+  h += `<div class="muted" style="text-align:center">Ketuk status untuk mengubah Lunas / Belum.<br>Lebih praktis: input Pengeluaran kategori 🏦 Cicilan Utang — cicilan otomatis ditandai Lunas.</div>`;
+  $('utang').innerHTML = h;
+}
+async function toggleCicilan(ev, row, status) {
+  ev.stopPropagation();
+  const jadiLunas = status !== 'Lunas';
+  if (!confirm(jadiLunas ? 'Tandai cicilan ini Lunas?' : 'Kembalikan cicilan ini ke Belum?')) return;
+  try { UTANG = await call('apiSetCicilan', row, jadiLunas); renderUtang(); toast(jadiLunas ? '✅ Ditandai lunas' : '↩️ Dikembalikan ke Belum'); loadHome(); }
+  catch (e) { toast('❌ ' + e.message); }
+}
+
+/* ---------- lainnya ---------- */
+function loadMore() { const m = curMore(); if (m === 'lap') loadLap(); if (m === 'ren') loadRen(); if (m === 'aset') loadAset(); }
+async function loadLap() {
+  const [y, m] = BULAN.lap; $('lapMonth').textContent = NAMA_BLN[m - 1] + ' ' + y;
+  $('lap').innerHTML = '<div class="loading">Memuat…</div>';
+  try {
+    const r = await call('apiLaporan', y, m);
+    const kel = r.per.filter(k => k.tipe === 'Pengeluaran'), mas = r.per.filter(k => k.tipe === 'Pemasukan');
+    const mk = Math.max(1, ...kel.map(k => k.jumlah)), mm = Math.max(1, ...mas.map(k => k.jumlah));
+    const mt = Math.max(1, ...r.tren.map(t => Math.max(t.masukRutin, t.keluarRutin)));
+    const rate = r.masukRutin ? 1 - r.keluarRutin / r.masukRutin : 0;
+    $('lap').innerHTML = `
+      <div class="card"><div class="grid2">
+        <div class="kpi"><span>Pemasukan</span><b class="in">${rpS(r.masuk)}</b></div><div class="kpi"><span>Pengeluaran</span><b class="out">${rpS(r.keluar)}</b></div>
+        <div class="kpi"><span>Masuk rutin</span><b class="in">${rpS(r.masukRutin)}</b></div><div class="kpi"><span>Keluar rutin</span><b class="out">${rpS(r.keluarRutin)}</b></div>
+      </div><div class="muted" style="margin-top:8px">Rasio menabung (rutin): <b class="${rate >= 0 ? 'in' : 'out'}">${Math.round(rate * 100)}%</b></div></div>
+      <div class="card"><h3><span>Tren 6 Bulan (rutin)</span></h3><div class="tren">
+        ${r.tren.map(t => `<div class="col"><div class="bars"><i style="height:${pct(t.masukRutin / mt)}%;background:var(--green)"></i><i style="height:${pct(t.keluarRutin / mt)}%;background:var(--red)"></i></div><small>${esc(t.label)}</small></div>`).join('')}
+      </div><div class="legend"><span><i style="background:var(--green)"></i>Masuk rutin</span><span><i style="background:var(--red)"></i>Keluar rutin</span></div></div>
+      <div class="card"><h3><span>Pengeluaran per Kategori</span></h3><div class="list">
+        ${kel.map(k => `<div class="it"><div class="ic">${k.ikon}</div><div class="grow"><div style="display:flex;justify-content:space-between"><span class="t1">${esc(k.nama)}${k.rutin ? '' : ' <span class="muted">(non-rutin)</span>'}</span><span class="amt">${rp(k.jumlah)}</span></div>
+          <div class="bar"><i style="width:${pct(k.jumlah / mk)}%;background:${k.budget && k.jumlah > k.budget ? 'var(--red)' : 'var(--teal)'}"></i></div>${k.budget ? `<div class="t2">Budget ${rp(k.budget)} • sisa ${rp(k.budget - k.jumlah)}</div>` : ''}</div></div>`).join('') || '<div class="muted">Tidak ada pengeluaran.</div>'}</div></div>
+      <div class="card"><h3><span>Pemasukan per Kategori</span></h3><div class="list">
+        ${mas.map(k => `<div class="it"><div class="ic">${k.ikon}</div><div class="grow"><div style="display:flex;justify-content:space-between"><span class="t1">${esc(k.nama)}</span><span class="amt in">${rp(k.jumlah)}</span></div>
+          <div class="bar"><i style="width:${pct(k.jumlah / mm)}%;background:var(--green)"></i></div></div></div>`).join('') || '<div class="muted">Tidak ada pemasukan.</div>'}</div></div>`;
+  } catch (e) { $('lap').innerHTML = `<div class="card out">❌ ${esc(e.message)}</div>`; }
+}
+async function loadRen() {
+  const el = $('m-ren'); el.innerHTML = '<div class="loading">Memuat…</div>';
+  try {
+    const r = await call('apiRenovasi');
+    const tot = r.bagian.find(b => b.nama === 'TOTAL') || r.bagian[r.bagian.length - 1];
+    const bag = r.bagian.filter(b => b.nama !== 'TOTAL');
+    const selisih = (r.dana.find(d => /Kelebihan/.test(d.label)) || { nilai: 0 }).nilai;
+    el.innerHTML = `
+      <div class="card hero"><div class="lbl">Progres Pembayaran</div><div class="big">${pct(tot.progress)}%</div>
+        <div class="row"><div><span class="lbl">Dibayar</span><b>${rpS(tot.dibayar)}</b></div><div><span class="lbl">Sisa</span><b>${rpS(tot.sisa)}</b></div></div></div>
+      <div class="card"><h3><span>Per Bagian</span></h3>${bag.map(b => `<div style="margin-bottom:10px"><div style="display:flex;justify-content:space-between"><b>${esc(b.nama)}</b><span>${pct(b.progress)}%</span></div>
+        <div class="bar"><i style="width:${pct(b.progress)}%;background:var(--orange)"></i></div><div class="t2">${rp(b.dibayar)} / ${rp(b.anggaran)}</div></div>`).join('')}</div>
+      <div class="card"><h3><span>Ketersediaan Dana</span></h3><div class="list">${r.dana.filter(d => d.label).map(d => `<div class="it"><div class="grow">${esc(d.label)}</div><div class="amt ${/Kelebihan/.test(d.label) ? (d.nilai >= 0 ? 'in' : 'out') : ''}">${rp(d.nilai)}</div></div>`).join('')}</div></div>
+      <div class="card"><h3><span>Belum Lunas (${r.items.length})</span></h3><div class="list">${r.items.map(i => `<div class="it"><div class="grow"><div class="t1">${esc(i.item)}</div><div class="t2">${esc(i.bagian)}${i.brand ? ' • ' + esc(i.brand) : ''}${i.dibayar ? ' • dibayar ' + rp(i.dibayar) : ''}</div></div><div class="amt out">${rp(i.sisa)}</div></div>`).join('')}</div>
+        <div class="muted" style="margin-top:8px">Update kolom "Dibayar" di tab Renovasi pada Google Sheets.</div></div>`;
+  } catch (e) { el.innerHTML = `<div class="card out">❌ ${esc(e.message)}</div>`; }
+}
+async function loadAset() {
+  const el = $('m-aset'); el.innerHTML = '<div class="loading">Memuat…</div>';
+  try {
+    const r = await call('apiAset');
+    el.innerHTML = `
+      <div class="card hero"><div class="lbl">Kekayaan Bersih</div><div class="big">${rpS(r.netWorth)}</div>
+        <div class="row"><div><span class="lbl">Total Aset</span><b>${rpS(r.totalAset)}</b></div><div><span class="lbl">Rasio Utang</span><b>${(r.rasio * 100).toFixed(1).replace('.', ',')}%</b></div></div></div>
+      <div class="card"><h3><span>Aset Fisik</span></h3><div class="list">${r.fisik.map(a => `<div class="it"><div class="ic">${/Emas/.test(a.jenis) ? '💎' : /Properti/.test(a.jenis) ? '🏠' : /Kendaraan/.test(a.jenis) ? '🚗' : '📦'}</div><div class="grow"><div class="t1">${esc(a.nama)}</div><div class="t2">${esc(a.jenis)}${/Emas/.test(a.jenis) ? ' • ' + r.emas.gram + ' gram × ' + rp(r.emas.harga) : ''}</div></div><div class="amt">${rpS(a.nilai)}</div></div>`).join('')}</div></div>
+      <div class="card"><h3><span>Uang di Rekening</span></h3><div class="list">${r.rekening.map(a => `<div class="it"><div class="grow">${esc(a.nama)}</div><div class="amt">${rp(a.nilai)}</div></div>`).join('')}</div></div>
+      <div class="card"><div class="list"><div class="it"><div class="grow">Sisa Utang</div><div class="amt out">${rp(r.sisaUtang)}</div></div></div>
+      <div class="muted">Ubah nilai rumah/mobil & harga emas di Google Sheets (tab Aset & Emas).</div></div>
+      <button class="btn ghost" onclick="if(confirm('Keluar dan hapus token dari perangkat ini?')) keluar()">Keluar dari perangkat ini</button>`;
+  } catch (e) { el.innerHTML = `<div class="card out">❌ ${esc(e.message)}</div>`; }
+}
+
+terapkanHide();
+if (TK) loadHome(); else tampilLogin();
+let terakhirMuat = Date.now();
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible' && TK && Date.now() - terakhirMuat > 60000) { terakhirMuat = Date.now(); loadHome(); }
+});
+</script>
+</body>
+</html>
