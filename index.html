@@ -247,13 +247,14 @@ function tampilLogin(msg) {
 async function masuk() {
   const t = $('tok').value.trim(); if (!t) return;
   TK = t; $('go').disabled = true; $('loginMsg').textContent = 'Memeriksa…';
-  try { await call('apiInit'); try { localStorage.setItem('keu_token', t); } catch (e) {}
+  try { const b = await call('apiBoot'); try { localStorage.setItem('keu_token', t); localStorage.setItem('keu_boot', JSON.stringify(b)); } catch (e) {}
         $('login').style.display = 'none'; $('app').style.display = 'block'; document.querySelector('.tabs').style.display = 'flex'; loadHome(); }
   catch (e) { $('loginMsg').textContent = '❌ ' + e.message; }
   $('go').disabled = false;
 }
 function keluar(salah) {
-  try { localStorage.removeItem('keu_token'); } catch (e) {}
+  try { localStorage.removeItem('keu_token'); localStorage.removeItem('keu_boot'); } catch (e) {}
+  HOME_ADA = false;
   TK = ''; tampilLogin(salah ? 'Token tidak valid / sudah diganti. Masukkan token baru.' : 'Anda sudah keluar dari perangkat ini.');
 }
 function toast(msg, ms) { const t = $('toast'); t.textContent = msg; t.style.display = 'block'; clearTimeout(t._h); t._h = setTimeout(() => t.style.display = 'none', ms || 3500); }
@@ -276,11 +277,29 @@ function curMore() { return document.querySelector('#moreSeg button.on').dataset
 function geserBulan(k, d) { let [y, m] = BULAN[k]; m += d; if (m < 1) { m = 12; y--; } if (m > 12) { m = 1; y++; } BULAN[k] = [y, m]; k === 'tx' ? loadTx() : loadLap(); }
 
 /* ---------- beranda ---------- */
+let HOME_ADA = false, BOOT_SEQ = 0;
 async function loadHome(refresh) {
-  if (refresh) $('homeSub').textContent = 'Memperbarui…';
+  const seq = ++BOOT_SEQ;
+  if (!HOME_ADA) {   // tampilkan data terakhir dari HP dulu → terasa instan
+    try { const c = JSON.parse(localStorage.getItem('keu_boot') || 'null'); if (c && c.init) { renderHome(c); } } catch (e) {}
+  }
+  if (HOME_ADA) $('homeSub').textContent = 'Memperbarui…';
   try {
-    const [d, init] = await Promise.all([call('apiDashboard'), call('apiInit')]);
-    INIT = init; isiAkunSelect();
+    let b;
+    try { b = await call('apiBoot', !!refresh); }
+    catch (e) { if (!/API tidak dikenal/.test(e.message)) throw e;   // server lama → cara lama
+      const [dash, init] = await Promise.all([call('apiDashboard'), call('apiInit')]); b = { init, dash }; }
+    if (seq !== BOOT_SEQ) return;
+    try { localStorage.setItem('keu_boot', JSON.stringify(b)); } catch (e) {}
+    renderHome(b);
+  } catch (e) {
+    if (HOME_ADA) { $('homeSub').textContent = 'Gagal memperbarui • data terakhir'; toast('❌ ' + e.message); }
+    else { $('home').innerHTML = `<div class="card out">❌ ${esc(e.message)}</div>`; $('homeSub').textContent = ''; }
+  }
+}
+function renderHome(b) {
+    const d = b.dash, init = b.init;
+    INIT = init; isiAkunSelect(); HOME_ADA = true;
     $('homeSub').textContent = 'Per ' + tglID(init.hariIni);
     const akun = init.akun.filter(a => a.aktif).sort((a, b) => b.saldo - a.saldo);
     const totalAkun = akun.reduce((s, a) => s + a.saldo, 0);
@@ -314,7 +333,6 @@ async function loadHome(refresh) {
         <div class="t2" style="margin-top:6px">Sisa ${rp(d.renov.sisa)} • Dana ${d.renov.selisihDana >= 0 ? 'lebih' : 'kurang'} <b class="${d.renov.selisihDana >= 0 ? 'in' : 'out'}">${rp(Math.abs(d.renov.selisihDana))}</b></div></div>
       <div class="card"><h3><span>Transaksi Terakhir</span><span onclick="buka('tx')">Semua ›</span></h3><div class="list">${d.terakhir.map(itemTx).join('')}</div></div>`;
     $('home').innerHTML = h;
-  } catch (e) { $('home').innerHTML = `<div class="card out">❌ ${esc(e.message)}</div>`; $('homeSub').textContent = ''; }
 }
 function bukaMore(m) { buka('more'); document.querySelector(`#moreSeg button[data-m=${m}]`).click(); }
 
