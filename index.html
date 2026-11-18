@@ -196,6 +196,15 @@
          -webkit-backdrop-filter:blur(22px) saturate(180%); backdrop-filter:blur(22px) saturate(180%); }
   .ptr.muter span { animation:muter .8s linear infinite; }
   @keyframes muter { to { transform:rotate(360deg); } }
+
+  html, body { overflow-x:clip !important; }
+  /* kapsul bulat penuh ala iOS */
+  .tabs { border-radius:999px; padding:6px 10px; }
+  .tabs button[data-s]::before { inset:0 2px; border-radius:999px; }
+  /* header transparan di posisi paling atas, jadi kaca saat konten di-scroll ke bawahnya */
+  .top { background:transparent; -webkit-backdrop-filter:none; backdrop-filter:none; transition:background .2s, box-shadow .2s; }
+  body.gulir .screen.on .top { background:color-mix(in srgb, var(--base) 70%, transparent);
+      -webkit-backdrop-filter:blur(20px) saturate(180%); backdrop-filter:blur(20px) saturate(180%); box-shadow:0 1px 0 var(--glass-brd); }
 </style>
 </head>
 <body>
@@ -389,7 +398,7 @@ function ikonKat(nama, tipe) { const k = INIT && INIT.kategori.find(x => x.nama 
 
 /* ---------- navigasi ---------- */
 document.querySelectorAll('.tabs button[data-s]').forEach(b => b.onclick = () => buka(b.dataset.s));
-const APP_VER = '2026.11.18-6';
+const APP_VER = '2026.11.18-7';
 /* ---------- update otomatis: cek versi terbaru di server tiap app dibuka ---------- */
 async function cekUpdate() {
   try {
@@ -457,6 +466,7 @@ document.addEventListener('visibilitychange', () => { if (document.visibilitySta
   });
 })();
 const ARGS_TERAKHIR = {};
+addEventListener('scroll', () => document.body.classList.toggle('gulir', scrollY > 4), { passive: true });
 async function refreshLayar() {
   const s = document.querySelector('.screen.on').id.slice(2);
   if (s === 'home') { SEGAR_PADA_RESET(); return loadHome(true); }
