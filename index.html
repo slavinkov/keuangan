@@ -247,6 +247,53 @@
   .bg-sum .ring > div:last-child { text-align:right; }
   .bg-sum .btn { margin-top:0; }
   .bg-link { display:block; width:100%; margin-top:8px; background:none; border:0; color:var(--muted); font:inherit; font-size:13px; text-decoration:underline; }
+
+  /* ---------- laporan dashboard ---------- */
+  :root { --s1:#2a78d6; --s2:#eb6834; --s3:#1baf7a; --s4:#eda100; --s5:#e87ba4; --s0:#b4b3ae; --sMasuk:#2a78d6; --sKeluar:#eb6834; }
+  @media (prefers-color-scheme: dark) { :root { --s1:#3987e5; --s2:#d95926; --s3:#199e70; --s4:#c98500; --s5:#d55181; --s0:#5c5b57; --sMasuk:#3987e5; --sKeluar:#d95926; } }
+  .lap-kpi { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; }
+  .lap-kpi > div { display:flex; flex-direction:column; gap:2px; }
+  .lap-kpi span:first-child { font-size:12px; color:var(--muted); }
+  .lap-kpi b { font-size:17px; font-weight:800; }
+  .dl { font-size:12px; font-weight:700; color:var(--muted); }
+  .dl.baik { color:var(--green); } .dl.buruk { color:var(--red); }
+  .bar.prog { height:10px; } .bar.prog i { background:var(--s1); }
+  .prog-b { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:12px; }
+  .prog-b > div { display:flex; flex-direction:column; gap:2px; } .prog-b b { font-size:15px; }
+  .prog-v { margin-top:10px; font-weight:700; font-size:14px; color:var(--muted); }
+  .prog-v.baik { color:var(--green); } .prog-v.buruk { color:var(--red); }
+  .donut-wrap { display:flex; justify-content:center; margin:4px 0 10px; }
+  .donut { width:190px; height:190px; }
+  .donut .d1 { font-size:9px; fill:var(--muted); font-weight:600; }
+  .donut .d2 { font-size:14px; fill:var(--text); font-weight:800; }
+  .lap-leg { display:flex; flex-direction:column; }
+  .lg-row { display:grid; grid-template-columns:12px 1fr auto auto 14px; align-items:center; gap:10px; padding:10px 2px; border:0; border-top:1px solid var(--line);
+            background:none; color:var(--text); font:inherit; text-align:left; width:100%; }
+  .lg-row:first-child { border-top:0; }
+  .lg-row i { width:12px; height:12px; border-radius:4px; }
+  .lg-n { font-weight:600; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .lg-p { font-size:12px; color:var(--muted); } .lg-v { font-weight:700; }
+  .lg-row .chev { color:var(--muted); }
+  .stack { display:flex; gap:2px; height:14px; border-radius:7px; overflow:hidden; background:var(--line); }
+  .stack i { display:block; height:100%; }
+  .stack-leg { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:10px; }
+  .stack-leg > div { display:flex; flex-direction:column; gap:1px; font-size:12px; color:var(--muted); }
+  .stack-leg i { display:inline-block; width:10px; height:10px; border-radius:3px; margin-right:5px; vertical-align:-1px; }
+  .stack-leg b { font-size:15px; color:var(--text); }
+  .seg.mini { display:inline-flex; padding:2px; border-radius:10px; font-size:12px; }
+  .seg.mini button { padding:4px 10px; font-size:12px; }
+  .tren2 { display:flex; gap:4px; height:150px; }
+  .tren2 .col { flex:1; display:flex; flex-direction:column; align-items:center; gap:3px; height:100%; justify-content:flex-end; background:none; border:0; padding:4px 0; border-radius:10px; font:inherit; color:inherit; }
+  .tren2 .col.kini { background:color-mix(in srgb, var(--accent) 10%, transparent); }
+  .tren2 .bars { display:flex; gap:2px; align-items:flex-end; flex:1; width:100%; justify-content:center; }
+  .tren2 .bars i { width:34%; max-width:14px; border-radius:4px 4px 0 0; display:block; }
+  .tren2 small { font-size:11px; color:var(--muted); font-weight:600; }
+  .tren2 em { font-style:normal; font-size:10px; font-weight:700; }
+  .ut-row { padding:8px 0; } .ut-row + .ut-row { border-top:1px solid var(--line); }
+  .ut-h { display:flex; justify-content:space-between; margin-bottom:6px; }
+  #lap .t2 { white-space:normal; overflow:visible; text-overflow:clip; }
+  .ut-d { font-size:12px; color:var(--muted); margin-top:4px; line-height:1.5; } .ut-d b { color:var(--text); }
+  .stack-leg span:first-child { white-space:nowrap; }
 </style>
 </head>
 <body>
@@ -463,7 +510,7 @@ function ikonKat(nama, tipe) { const k = INIT && INIT.kategori.find(x => x.nama 
 
 /* ---------- navigasi ---------- */
 document.querySelectorAll('.tabs button[data-s]').forEach(b => b.onclick = () => buka(b.dataset.s));
-const APP_VER = '2026.11.19-6';
+const APP_VER = '2026.11.19-7';
 try { if (localStorage.getItem('keu_ver') !== APP_VER) { Object.keys(localStorage).filter(k => k.startsWith('keu_c_') || k === 'keu_boot').forEach(k => localStorage.removeItem(k)); localStorage.setItem('keu_ver', APP_VER); } } catch (e) {}
 /* ---------- update otomatis: cek versi terbaru di server tiap app dibuka ---------- */
 async function cekUpdate() {
@@ -1074,30 +1121,117 @@ async function toggleCicilan(ev, row, status) {
 
 /* ---------- lainnya ---------- */
 function loadMore() { const m = curMore(); if (m === 'lap') loadLap(); if (m === 'ren') loadRen(); if (m === 'aset') loadAset(); }
+/* ---------- LAPORAN: dashboard per cycle ---------- */
+let LAP_RUTIN = false, LAP_DATA = null, LAP_KEY = '';
+const pctTeks = x => (x * 100).toFixed(x < 0.1 && x > 0 ? 1 : 0).replace('.', ',') + '%';
+function deltaLap(kini, lalu, naikBaik) {
+  if (!lalu) return '<span class="dl">—</span>';
+  const p = (kini - lalu) / Math.abs(lalu), naik = p >= 0, baik = naik === naikBaik;
+  return `<span class="dl ${Math.abs(p) < 0.005 ? '' : baik ? 'baik' : 'buruk'}">${naik ? '▲' : '▼'} ${pctTeks(Math.abs(p))}</span>`;
+}
+function donutSvg(seg, total) {   // seg: [{nilai, warna}] – donut dengan celah 2px antar irisan
+  const R = 54, C = 2 * Math.PI * R, gap = seg.length > 1 ? 2 : 0;
+  let off = 0;
+  const arcs = seg.map(s => { const len = Math.max(0, s.nilai / total * C - gap);
+    const el = `<circle r="${R}" cx="70" cy="70" fill="none" stroke="${s.warna}" stroke-width="20" stroke-dasharray="${len} ${C - len}" stroke-dashoffset="${-off}" transform="rotate(-90 70 70)"><title>${esc(s.nama)}: ${rpT(s.nilai)}</title></circle>`;
+    off += s.nilai / total * C; return el; }).join('');
+  return `<svg viewBox="0 0 140 140" class="donut" role="img" aria-label="Komposisi pengeluaran">${arcs}
+    <text x="70" y="64" text-anchor="middle" class="d1">Total keluar</text><text x="70" y="82" text-anchor="middle" class="d2">${HIDE ? 'Rp ••••' : rpS(total).replace(/<[^>]+>/g, '')}</text></svg>`;
+}
+async function bukaKatLap(nama) {
+  const [y, m] = BULAN.lap;
+  $('detailBody').innerHTML = `<h2>${esc(nama)}</h2><div class="muted">${teksRentang(y, m)}</div><div class="loading">Memuat…</div>`; bukaSheet('detail');
+  try {
+    const list = (await callC('apiTransaksi', y, m, '')).filter(t => t.tipe === 'Pengeluaran' && t.kat === nama).sort((a, b) => b.jumlah - a.jumlah);
+    const tot = list.reduce((s, t) => s + t.jumlah, 0);
+    $('detailBody').innerHTML = `<h2>${esc(nama)}</h2><div class="muted" style="margin-bottom:8px">${teksRentang(y, m)} • ${list.length} transaksi • ${rp(tot)}</div>
+      <div class="list">${list.map(itemTx).join('') || '<div class="muted">Tidak ada transaksi.</div>'}</div>
+      <button class="btn ghost" onclick="tutupSheet()">Tutup</button>`;
+  } catch (e) { $('detailBody').innerHTML = `<div class="out">❌ ${esc(e.message)}</div>`; }
+}
+function pilihCycleLap(y, m) { BULAN.lap = [y, m]; loadLap(); }
 async function loadLap() {
   const [y, m] = BULAN.lap; $('lapMonth').innerHTML = labelSiklus(y, m);
-  $('lap').innerHTML = '<div class="loading">Memuat…</div>';
+  if (LAP_KEY !== y + '-' + m) $('lap').innerHTML = '<div class="loading">Memuat…</div>';
   try {
-    const r = await callC('apiLaporan', y, m);
-    const kel = r.per.filter(k => k.tipe === 'Pengeluaran'), mas = r.per.filter(k => k.tipe === 'Pemasukan');
-    const mk = Math.max(1, ...kel.map(k => k.jumlah)), mm = Math.max(1, ...mas.map(k => k.jumlah));
-    const mt = Math.max(1, ...r.tren.map(t => Math.max(t.masukRutin, t.keluarRutin)));
-    const rate = r.masukRutin ? 1 - r.keluarRutin / r.masukRutin : 0;
-    $('lap').innerHTML = `
-      <div class="card"><div class="grid2">
-        <div class="kpi"><span>Pemasukan</span><b class="in">${rpS(r.masuk)}</b></div><div class="kpi"><span>Pengeluaran</span><b class="out">${rpS(r.keluar)}</b></div>
-        <div class="kpi"><span>Masuk rutin</span><b class="in">${rpS(r.masukRutin)}</b></div><div class="kpi"><span>Keluar rutin</span><b class="out">${rpS(r.keluarRutin)}</b></div>
-      </div><div class="muted" style="margin-top:8px">Rasio menabung (rutin): <b class="${rate >= 0 ? 'in' : 'out'}">${Math.round(rate * 100)}%</b></div></div>
-      <div class="card"><h3><span>Tren 6 Bulan (rutin)</span></h3><div class="tren">
-        ${r.tren.map(t => `<div class="col"><div class="bars"><i style="height:${pct(t.masukRutin / mt)}%;background:var(--green)"></i><i style="height:${pct(t.keluarRutin / mt)}%;background:var(--red)"></i></div><small>${esc(t.label)}</small></div>`).join('')}
-      </div><div class="legend"><span><i style="background:var(--green)"></i>Masuk rutin</span><span><i style="background:var(--red)"></i>Keluar rutin</span></div></div>
-      <div class="card"><h3><span>Pengeluaran per Kategori</span></h3><div class="list">
-        ${kel.map(k => `<div class="it"><div class="ic">${k.ikon}</div><div class="grow"><div style="display:flex;justify-content:space-between"><span class="t1">${esc(k.nama)}${k.rutin ? '' : ' <span class="muted">(non-rutin)</span>'}</span><span class="amt">${rp(k.jumlah)}</span></div>
-          <div class="bar"><i style="width:${pct(k.jumlah / mk)}%;background:${k.budget && k.jumlah > k.budget ? 'var(--red)' : 'var(--teal)'}"></i></div>${k.budget ? `<div class="t2">Budget ${rp(k.budget)} • sisa ${rp(k.budget - k.jumlah)}</div>` : ''}</div></div>`).join('') || '<div class="muted">Tidak ada pengeluaran.</div>'}</div></div>
-      <div class="card"><h3><span>Pemasukan per Kategori</span></h3><div class="list">
-        ${mas.map(k => `<div class="it"><div class="ic">${k.ikon}</div><div class="grow"><div style="display:flex;justify-content:space-between"><span class="t1">${esc(k.nama)}</span><span class="amt in">${rp(k.jumlah)}</span></div>
-          <div class="bar"><i style="width:${pct(k.jumlah / mm)}%;background:var(--green)"></i></div></div></div>`).join('') || '<div class="muted">Tidak ada pemasukan.</div>'}</div></div>`;
+    const [r, ut] = await Promise.all([callC('apiLaporan', y, m), callC('apiUtang').catch(() => null)]);
+    if (BULAN.lap[0] !== y || BULAN.lap[1] !== m) return;
+    LAP_DATA = r; LAP_KEY = y + '-' + m; renderLap(r, ut);
   } catch (e) { $('lap').innerHTML = `<div class="card out">❌ ${esc(e.message)}</div>`; }
+}
+function renderLap(r, ut) {
+  const [y, m] = BULAN.lap;
+  const lalu = r.tren[r.tren.length - 2] || null;
+  const selisih = r.masuk - r.keluar, selisihLalu = lalu ? lalu.masuk - lalu.keluar : 0;
+  const kel = r.per.filter(k => k.tipe === 'Pengeluaran'), mas = r.per.filter(k => k.tipe === 'Pemasukan');
+  let h = '';
+  // 1. Ringkasan + perbandingan
+  h += `<div class="card"><div class="lap-kpi">
+      <div><span>Masuk</span><b class="in">${rpS(r.masuk)}</b>${deltaLap(r.masuk, lalu && lalu.masuk, true)}</div>
+      <div><span>Keluar</span><b class="out">${rpS(r.keluar)}</b>${deltaLap(r.keluar, lalu && lalu.keluar, false)}</div>
+      <div><span>Selisih</span><b class="${selisih >= 0 ? 'in' : 'out'}">${rpS(selisih)}</b>${lalu ? `<span class="dl">lalu ${rpS(selisihLalu)}</span>` : ''}</div>
+    </div>${lalu ? `<div class="t2" style="margin-top:8px">Persentase dibanding Cycle ${esc(NAMA_BLN[lalu.m - 1])}</div>` : ''}</div>`;
+  // 2. Progres cycle
+  if (r.hariKe > 0) {
+    const selesai = r.hariKe >= r.hariTotal && isoD(now) > r.sampai;
+    let banding = '';
+    if (r.rata3 && !selesai) {
+      const p = r.rata3.keluarRutin ? (r.keluarRutin - r.rata3.keluarRutin) / r.rata3.keluarRutin : 0;
+      banding = `<div class="prog-b"><div><span class="t2">Biaya hidup (rutin) sejauh ini</span><b>${rp(r.keluarRutin)}</b></div>
+        <div><span class="t2">Biasanya di hari ke-${r.hariKe}</span><b>${rp(r.rata3.keluarRutin)}</b></div></div>
+        <div class="t2" style="margin-top:4px">"Biasanya" = rata-rata ${r.rata3.jumlahCycle} cycle sebelumnya pada hari yang sama.</div>
+        <div class="prog-v ${p > 0.05 ? 'buruk' : p < -0.05 ? 'baik' : ''}">${Math.abs(p) <= 0.05 ? '● Sejalan dengan biasanya' : p > 0 ? `▲ ${pctTeks(p)} lebih boros dari biasanya` : `▼ ${pctTeks(-p)} lebih hemat dari biasanya`}</div>`;
+    }
+    h += `<div class="card"><h3><span>${selesai ? 'Cycle selesai' : `Hari ke-${r.hariKe} dari ${r.hariTotal}`}</span><span class="t2">${selesai ? '' : `${r.hariTotal - r.hariKe} hari lagi`}</span></h3>
+      <div class="bar prog"><i style="width:${pct(r.hariKe / r.hariTotal)}%"></i></div>${banding}</div>`;
+  }
+  // 3 & 4. Donut + top 5 kategori pengeluaran
+  if (kel.length) {
+    const top = kel.slice(0, 5), sisa = kel.slice(5).reduce((s, k) => s + k.jumlah, 0);
+    const seg = top.map((k, i) => ({ nama: k.nama, nilai: k.jumlah, warna: `var(--s${i + 1})` }));
+    if (sisa > 0) seg.push({ nama: `Lainnya (${kel.length - 5} kategori)`, nilai: sisa, warna: 'var(--s0)' });
+    h += `<div class="card"><h3><span>Ke mana uangnya pergi</span></h3>
+      <div class="donut-wrap">${donutSvg(seg, r.keluar)}</div>
+      <div class="lap-leg">${seg.map((s, i) => `<button class="lg-row" ${i < top.length ? `onclick="bukaKatLap('${esc(top[i].nama).replace(/'/g, "\\'")}')"` : 'disabled'}>
+        <i style="background:${s.warna}"></i><span class="lg-n">${esc(s.nama)}</span><span class="lg-p">${pctTeks(s.nilai / r.keluar)}</span><span class="lg-v">${rp(s.nilai)}</span>${i < top.length ? '<span class="chev">›</span>' : '<span class="chev"></span>'}</button>`).join('')}</div>
+      <div class="t2" style="margin-top:6px">Ketuk kategori untuk melihat transaksinya.</div></div>`;
+  }
+  // 6. Rutin vs tidak rutin
+  if (r.keluar > 0) {
+    const rut = r.keluarRutin, non = r.keluar - r.keluarRutin;
+    const nonKat = kel.filter(k => !k.rutin).slice(0, 3);
+    h += `<div class="card"><h3><span>Biaya hidup vs pengeluaran besar</span></h3>
+      <div class="stack"><i style="width:${pct(rut / r.keluar)}%;background:var(--s1)"></i><i style="width:${pct(non / r.keluar)}%;background:var(--s2)"></i></div>
+      <div class="stack-leg"><div><span><i style="background:var(--s1)"></i>Rutin (biaya hidup)</span><b>${rp(rut)}</b><span class="t2">${pctTeks(rut / r.keluar)}</span></div>
+        <div><span><i style="background:var(--s2)"></i>Tidak rutin</span><b>${rp(non)}</b><span class="t2">${pctTeks(non / r.keluar)}</span></div></div>
+      ${nonKat.length ? `<div class="t2" style="margin-top:8px">Tidak rutin terbesar: ${nonKat.map(k => `${esc(k.nama)} ${rp(k.jumlah)}`).join(' • ')}</div>` : ''}</div>`;
+  }
+  // 8. Tren 6 cycle
+  const nilai = t => LAP_RUTIN ? [t.masukRutin, t.keluarRutin] : [t.masuk, t.keluar];
+  const mt = Math.max(1, ...r.tren.map(t => Math.max(...nilai(t))));
+  h += `<div class="card"><h3><span>Tren 6 cycle</span><span class="seg mini" id="lapSeg"><button class="${LAP_RUTIN ? '' : 'on'}" data-r="0">Semua</button><button class="${LAP_RUTIN ? 'on' : ''}" data-r="1">Rutin</button></span></h3>
+    <div class="tren2">${r.tren.map(t => { const [a, b] = nilai(t), sel = a - b, kini = t.y === y && t.m === m;
+      return `<button class="col ${kini ? 'kini' : ''}" onclick="pilihCycleLap(${t.y},${t.m})" title="Cycle ${esc(NAMA_BLN[t.m - 1])}: masuk ${rpT(a)}, keluar ${rpT(b)}">
+        <div class="bars"><i style="height:${Math.max(2, pct(a / mt))}%;background:var(--sMasuk)"></i><i style="height:${Math.max(2, pct(b / mt))}%;background:var(--sKeluar)"></i></div>
+        <small>${esc(t.label)}</small><em class="${sel >= 0 ? 'in' : 'out'}">${HIDE ? '••' : (sel >= 0 ? '+' : '−') + rpS(Math.abs(sel)).replace(/<[^>]+>/g, '').replace('Rp', '')}</em></button>`; }).join('')}</div>
+    <div class="legend"><span><i style="background:var(--sMasuk)"></i>Masuk</span><span><i style="background:var(--sKeluar)"></i>Keluar</span></div>
+    <div class="t2" style="margin-top:4px">Angka di bawah = selisih masuk − keluar. Ketuk batang untuk membuka cycle itu.</div></div>`;
+  // 14. Progres hutang
+  const aktifUt = ut && ut.utang ? ut.utang.filter(u => u.sisa > 0) : [], lunasUt = ut && ut.utang ? ut.utang.filter(u => u.sisa <= 0) : [];
+  if (aktifUt.length || lunasUt.length) {
+    h += `<div class="card"><h3><span>Progres hutang</span></h3>${aktifUt.map(u => {
+      const p = u.total ? u.dibayar / u.total : 0;
+      return `<div class="ut-row"><div class="ut-h"><b>${esc(u.nama)}</b><span>${pctTeks(p)}</span></div>
+        <div class="bar"><i style="width:${pct(p)}%;background:var(--s3)"></i></div>
+        <div class="ut-d">Sisa <b>${rp(u.sisa)}</b> dari ${rp(u.total)}${u.lunasPada ? ` • lunas ±<b>${esc(tglID(u.lunasPada).replace(/^\d+ /, ''))}</b>` : ''}${u.next ? `<br>Cicilan berikutnya ${rp(u.nextAmt)} • ${esc(tglID(u.next))}` : ''}</div></div>`; }).join('')}
+      ${lunasUt.length ? `<div class="t2" style="margin-top:6px">✅ Sudah lunas: ${lunasUt.map(u => esc(u.nama)).join(', ')}</div>` : ''}</div>`;
+  }
+  // Pemasukan per kategori (ringkas)
+  if (mas.length) {
+    h += `<div class="card"><h3><span>Sumber pemasukan</span></h3><div class="list">${mas.map(k => `<div class="it"><div class="ic">${k.ikon}</div><div class="grow"><div class="t1">${esc(k.nama)}</div><div class="t2">${pctTeks(k.jumlah / r.masuk)} dari total masuk</div></div><div class="amt in">${rp(k.jumlah)}</div></div>`).join('')}</div></div>`;
+  }
+  $('lap').innerHTML = h;
+  const seg = $('lapSeg'); if (seg) seg.querySelectorAll('button').forEach(b => b.onclick = e => { e.stopPropagation(); LAP_RUTIN = b.dataset.r === '1'; renderLap(r, ut); });
 }
 let REN = null, RENSEMUA = false;
 async function loadRen() {
