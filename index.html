@@ -209,6 +209,13 @@
   .rentang label { display:block; }
   .rentang span { display:block; font-size:12px; font-weight:700; color:var(--muted); margin:0 0 4px 4px; }
   .rentang input { width:100%; margin:0; min-height:44px; -webkit-appearance:none; appearance:none; text-align:left; }
+  .monthnav b { display:flex; flex-direction:column; align-items:center; line-height:1.15; }
+  .cyc { font-size:10px; font-weight:800; letter-spacing:.9px; text-transform:uppercase; color:var(--accent); }
+  .cycm { font-size:15px; font-weight:800; }
+  .cycr { font-size:11px; font-weight:500; color:var(--muted); margin-top:1px; }
+  h3.cychead { display:flex; flex-direction:column; align-items:flex-start; gap:0; }
+  h3.cychead .cycm { font-size:17px; text-transform:none; letter-spacing:0; }
+  h3.cychead .cycr { text-transform:none; letter-spacing:0; }
 </style>
 </head>
 <body>
@@ -313,7 +320,16 @@ const API_URL = 'https://script.google.com/macros/s/AKfycbxaS_sipkeyFVf9-Q0m5FW-
 let TK = ''; try { TK = localStorage.getItem('keu_token') || ''; } catch (e) {}
 let INIT = null, fTipe = 'Pengeluaran', fKat = '';
 const now = new Date();
-const BULAN = { tx: [now.getFullYear(), now.getMonth() + 1], lap: [now.getFullYear(), now.getMonth() + 1] };
+/* ---------- cycle gajian: tanggal 23 s.d. 22 bulan berikutnya, dinamai bulan akhirnya ---------- */
+const CYCLE_MULAI = 23;
+function siklusDari(d) { let y = d.getFullYear(), m = d.getMonth() + 1; if (d.getDate() >= CYCLE_MULAI) { m++; if (m > 12) { m = 1; y++; } } return [y, m]; }
+const isoD = d => d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+function rentangSiklus(y, m) { return [isoD(new Date(y, m - 2, CYCLE_MULAI)), isoD(new Date(y, m - 1, CYCLE_MULAI - 1))]; }
+const BLN3 = ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'];
+function teksRentang(y, m) { const a = new Date(y, m - 2, CYCLE_MULAI), b = new Date(y, m - 1, CYCLE_MULAI - 1);
+  return a.getDate() + ' ' + BLN3[a.getMonth()] + (a.getFullYear() !== b.getFullYear() ? ' ' + a.getFullYear() : '') + ' – ' + b.getDate() + ' ' + BLN3[b.getMonth()] + ' ' + b.getFullYear(); }
+function labelSiklus(y, m) { return `<span class="cyc">Cycle</span><span class="cycm">${NAMA_BLN[m - 1]} ${y}</span><span class="cycr">${teksRentang(y, m)}</span>`; }
+const BULAN = { tx: siklusDari(now), lap: siklusDari(now) };
 const NAMA_BLN = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
 const $ = id => document.getElementById(id);
 const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -380,7 +396,7 @@ async function callC(fn, ...args) {
 let SUDAH_PANASKAN = false;
 function panaskan() {   // ambil data menu lain di belakang supaya pindah menu langsung tampil
   if (SUDAH_PANASKAN) return; SUDAH_PANASKAN = true;
-  const y = now.getFullYear(), m = now.getMonth() + 1;
+  const [y, m] = siklusDari(now);
   [['apiTransaksi', y, m, ''], ['apiUtang'], ['apiLaporan', y, m], ['apiRenovasi'], ['apiAset']]
     .forEach(([fn, ...a]) => callC(fn, ...a).catch(() => {}));
 }
@@ -408,7 +424,8 @@ function ikonKat(nama, tipe) { const k = INIT && INIT.kategori.find(x => x.nama 
 
 /* ---------- navigasi ---------- */
 document.querySelectorAll('.tabs button[data-s]').forEach(b => b.onclick = () => buka(b.dataset.s));
-const APP_VER = '2026.11.19-2';
+const APP_VER = '2026.11.19-3';
+try { if (localStorage.getItem('keu_ver') !== APP_VER) { Object.keys(localStorage).filter(k => k.startsWith('keu_c_') || k === 'keu_boot').forEach(k => localStorage.removeItem(k)); localStorage.setItem('keu_ver', APP_VER); } } catch (e) {}
 /* ---------- update otomatis: cek versi terbaru di server tiap app dibuka ---------- */
 async function cekUpdate() {
   try {
@@ -602,7 +619,7 @@ function renderHome(b) {
       <div class="card hero"><div class="lbl">Kekayaan Bersih</div><div class="big">${rpS(d.netWorth)}</div>
         <div class="row"><div><span class="lbl">Total Aset</span><b>${rpS(d.totalAset)}</b></div><div><span class="lbl">Sisa Utang</span><b>${rpS(d.sisaUtang)}</b></div></div></div>
       <div class="card"><div class="muted" style="text-transform:uppercase;letter-spacing:.4px;font-weight:700">Total Saldo <span style="font-weight:400;text-transform:none">(semua akun, tanpa aset)</span></div><div style="font-size:26px;font-weight:800;color:var(--teal);margin-top:4px">${rp(totalSaldo)}</div><div class="t2">${init.akun.filter(a => a.saldo).length} akun berisi saldo</div></div>
-      <div class="card"><h3><span>${NAMA_BLN[now.getMonth()]} ${now.getFullYear()}</span></h3>
+      <div class="card"><h3 class="cychead">${(() => { const [cy, cm] = d.bulan.y ? [d.bulan.y, d.bulan.m] : siklusDari(now); return labelSiklus(cy, cm); })()}</h3>
         <div class="grid3">
           <div class="kpi"><span>Masuk</span><b class="in">${rpS(d.bulan.masuk)}</b></div>
           <div class="kpi"><span>Keluar</span><b class="out">${rpS(d.bulan.keluar)}</b></div>
@@ -670,7 +687,7 @@ async function cari() {
 /* ---------- mode transaksi: per bulan / per tahun / rentang tanggal ---------- */
 let TXMODE = 'bulan', TAHUN_TX = now.getFullYear(), TXSEQ = 0;
 const isoTgl = d => d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
-$('txDari').value = isoTgl(new Date(now.getFullYear(), now.getMonth(), 1)); $('txSampai').value = isoTgl(now);
+$('txDari').value = rentangSiklus(...siklusDari(now))[0]; $('txSampai').value = isoTgl(now);
 document.querySelectorAll('#txMode button').forEach(b => b.onclick = () => {
   TXMODE = b.dataset.m;
   document.querySelectorAll('#txMode button').forEach(x => x.classList.toggle('on', x === b));
@@ -678,6 +695,7 @@ document.querySelectorAll('#txMode button').forEach(b => b.onclick = () => {
 });
 ['txDari', 'txSampai'].forEach(id => $(id).addEventListener('change', () => loadTx()));
 const PILIHAN_CEPAT = [
+  ['Cycle ini', () => [rentangSiklus(...siklusDari(now))[0], isoTgl(now)]],
   ['7 hari', () => [isoTgl(new Date(now.getFullYear(), now.getMonth(), now.getDate() - 6)), isoTgl(now)]],
   ['30 hari', () => [isoTgl(new Date(now.getFullYear(), now.getMonth(), now.getDate() - 29)), isoTgl(now)]],
   ['3 bulan', () => [isoTgl(new Date(now.getFullYear(), now.getMonth() - 2, 1)), isoTgl(now)]],
@@ -708,7 +726,7 @@ async function callSegar(fn, ...args) {   // ambil langsung dari server lalu sim
 }
 async function ambilTx() {
   const akun = $('txAkun').value;
-  if (TXMODE === 'bulan') { const [y, m] = BULAN.tx; return { list: await (TX_SEGAR ? callSegar : callC)('apiTransaksi', y, m, akun), label: NAMA_BLN[m - 1] + ' ' + y, kosong: 'Belum ada transaksi di bulan ini.' }; }
+  if (TXMODE === 'bulan') { const [y, m] = BULAN.tx; return { list: await (TX_SEGAR ? callSegar : callC)('apiTransaksi', y, m, akun), label: NAMA_BLN[m - 1] + ' ' + y, kosong: 'Belum ada transaksi di cycle ini.' }; }
   let dari, sampai, label, kosong;
   if (TXMODE === 'tahun') {
     dari = TAHUN_TX + '-01-01'; sampai = TAHUN_TX + '-12-31';
@@ -734,7 +752,7 @@ async function ambilTx() {
 async function loadTx(paksa) {
   if (!paksa && $('q').value.trim().length >= 2) return cari();
   const seq = ++TXSEQ; aturModeTx();
-  if (TXMODE === 'bulan') { const [y, m] = BULAN.tx; $('txMonth').textContent = NAMA_BLN[m - 1] + ' ' + y; }
+  if (TXMODE === 'bulan') { const [y, m] = BULAN.tx; $('txMonth').innerHTML = labelSiklus(y, m); }
   if (TXMODE === 'tahun') $('txMonth').textContent = String(TAHUN_TX);
   $('txList').innerHTML = '<div class="loading">Memuat…</div>'; $('txSum').innerHTML = '';
   try {
@@ -893,7 +911,7 @@ async function toggleCicilan(ev, row, status) {
 /* ---------- lainnya ---------- */
 function loadMore() { const m = curMore(); if (m === 'lap') loadLap(); if (m === 'ren') loadRen(); if (m === 'aset') loadAset(); }
 async function loadLap() {
-  const [y, m] = BULAN.lap; $('lapMonth').textContent = NAMA_BLN[m - 1] + ' ' + y;
+  const [y, m] = BULAN.lap; $('lapMonth').innerHTML = labelSiklus(y, m);
   $('lap').innerHTML = '<div class="loading">Memuat…</div>';
   try {
     const r = await callC('apiLaporan', y, m);
