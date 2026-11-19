@@ -205,6 +205,10 @@
   .top { background:transparent; -webkit-backdrop-filter:none; backdrop-filter:none; transition:background .2s, box-shadow .2s; }
   body.gulir .screen.on .top { background:color-mix(in srgb, var(--base) 70%, transparent);
       -webkit-backdrop-filter:blur(20px) saturate(180%); backdrop-filter:blur(20px) saturate(180%); box-shadow:0 1px 0 var(--glass-brd); }
+  .rentang { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:12px; }
+  .rentang label { display:block; }
+  .rentang span { display:block; font-size:12px; font-weight:700; color:var(--muted); margin:0 0 4px 4px; }
+  .rentang input { width:100%; margin:0; min-height:44px; -webkit-appearance:none; appearance:none; text-align:left; }
 </style>
 </head>
 <body>
@@ -232,7 +236,13 @@
   <div class="wrap">
     <div class="search"><span class="sic">🔍</span><input id="q" type="search" placeholder="Cari catatan, kategori, akun…" autocomplete="off" enterkeyhint="search"><button class="clr" id="qClr" onclick="hapusCari()">✕</button></div>
     <div id="txBulanBox">
-    <div class="monthnav"><button onclick="geserBulan('tx',-1)">‹</button><b id="txMonth"></b><button onclick="geserBulan('tx',1)">›</button></div>
+    <div class="seg" id="txMode"><button data-m="bulan" class="on">Bulan</button><button data-m="tahun">Tahun</button><button data-m="rentang">Rentang</button></div>
+    <div class="monthnav" id="txNav"><button onclick="geserTx(-1)">‹</button><b id="txMonth"></b><button onclick="geserTx(1)">›</button></div>
+    <div class="rentang" id="txRentang" style="display:none">
+      <label><span>Dari</span><input type="date" id="txDari"></label>
+      <label><span>Sampai</span><input type="date" id="txSampai"></label>
+    </div>
+    <div class="chips" id="txCepat" style="display:none; margin:-4px 0 12px"></div>
     <select id="txAkun" onchange="loadTx()"><option value="">Semua akun</option></select>
     <div style="height:12px"></div>
     </div>
@@ -398,7 +408,7 @@ function ikonKat(nama, tipe) { const k = INIT && INIT.kategori.find(x => x.nama 
 
 /* ---------- navigasi ---------- */
 document.querySelectorAll('.tabs button[data-s]').forEach(b => b.onclick = () => buka(b.dataset.s));
-const APP_VER = '2026.11.18-7';
+const APP_VER = '2026.11.19-1';
 /* ---------- update otomatis: cek versi terbaru di server tiap app dibuka ---------- */
 async function cekUpdate() {
   try {
@@ -471,6 +481,7 @@ async function refreshLayar() {
   const s = document.querySelector('.screen.on').id.slice(2);
   if (s === 'home') { SEGAR_PADA_RESET(); return loadHome(true); }
   const cari = $('q').value.trim().length >= 2;
+  if (s === 'tx' && !cari) { TX_SEGAR = true; try { return await loadTx(); } finally { TX_SEGAR = false; } }
   const fn = s === 'tx' ? (cari ? 'apiCari' : 'apiTransaksi') : s === 'utang' ? 'apiUtang'
            : ({ lap: 'apiLaporan', ren: 'apiRenovasi', aset: 'apiAset' })[curMore()];
   const args = ARGS_TERAKHIR[fn] || [];
@@ -656,16 +667,80 @@ async function cari() {
     renderTxList(r.list, 'Tidak ada transaksi yang cocok.');
   } catch (e) { $('txList').innerHTML = `<div class="card out">❌ ${esc(e.message)}</div>`; }
 }
+/* ---------- mode transaksi: per bulan / per tahun / rentang tanggal ---------- */
+let TXMODE = 'bulan', TAHUN_TX = now.getFullYear(), TXSEQ = 0;
+const isoTgl = d => d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+$('txDari').value = isoTgl(new Date(now.getFullYear(), now.getMonth(), 1)); $('txSampai').value = isoTgl(now);
+document.querySelectorAll('#txMode button').forEach(b => b.onclick = () => {
+  TXMODE = b.dataset.m;
+  document.querySelectorAll('#txMode button').forEach(x => x.classList.toggle('on', x === b));
+  aturModeTx(); loadTx(); animMasuk($('txList'), 0);
+});
+['txDari', 'txSampai'].forEach(id => $(id).addEventListener('change', () => loadTx()));
+const PILIHAN_CEPAT = [
+  ['7 hari', () => [isoTgl(new Date(now.getFullYear(), now.getMonth(), now.getDate() - 6)), isoTgl(now)]],
+  ['30 hari', () => [isoTgl(new Date(now.getFullYear(), now.getMonth(), now.getDate() - 29)), isoTgl(now)]],
+  ['3 bulan', () => [isoTgl(new Date(now.getFullYear(), now.getMonth() - 2, 1)), isoTgl(now)]],
+  ['6 bulan', () => [isoTgl(new Date(now.getFullYear(), now.getMonth() - 5, 1)), isoTgl(now)]],
+  ['Tahun ini', () => [now.getFullYear() + '-01-01', isoTgl(now)]],
+];
+$('txCepat').innerHTML = PILIHAN_CEPAT.map((p, i) => `<span class="chip" data-i="${i}">${p[0]}</span>`).join('');
+document.querySelectorAll('#txCepat .chip').forEach(c => c.onclick = () => {
+  const [a, b] = PILIHAN_CEPAT[c.dataset.i][1](); $('txDari').value = a; $('txSampai').value = b; loadTx();
+});
+function aturModeTx() {
+  $('txNav').style.display = TXMODE === 'rentang' ? 'none' : '';
+  $('txRentang').style.display = $('txCepat').style.display = TXMODE === 'rentang' ? '' : 'none';
+}
+function geserTx(d) {
+  if (TXMODE === 'tahun') { TAHUN_TX += d; loadTx(); } else geserBulan('tx', d);
+}
+function bulanAntara(dari, sampai) {   // daftar [tahun, bulan] dari tanggal 'yyyy-mm-dd' sampai 'yyyy-mm-dd'
+  let [y, m] = dari.split('-').map(Number); const [y2, m2] = sampai.split('-').map(Number), out = [];
+  while ((y < y2 || (y === y2 && m <= m2)) && out.length < 36) { out.push([y, m]); if (++m > 12) { m = 1; y++; } }
+  return out;
+}
+let TX_SEGAR = false;
+async function callSegar(fn, ...args) {   // ambil langsung dari server lalu simpan ke cache
+  const k = 'keu_c_' + fn + JSON.stringify(args), d = await call(fn, ...args);
+  MEM[k] = d; SEGAR_PADA[k] = Date.now(); try { localStorage.setItem(k, JSON.stringify(d)); } catch (e) {}
+  return d;
+}
+async function ambilTx() {
+  const akun = $('txAkun').value;
+  if (TXMODE === 'bulan') { const [y, m] = BULAN.tx; return { list: await (TX_SEGAR ? callSegar : callC)('apiTransaksi', y, m, akun), label: NAMA_BLN[m - 1] + ' ' + y, kosong: 'Belum ada transaksi di bulan ini.' }; }
+  let dari, sampai, label, kosong;
+  if (TXMODE === 'tahun') {
+    dari = TAHUN_TX + '-01-01'; sampai = TAHUN_TX + '-12-31';
+    if (TAHUN_TX === now.getFullYear()) sampai = isoTgl(now);
+    label = 'Tahun ' + TAHUN_TX; kosong = 'Belum ada transaksi di tahun ini.';
+  } else {
+    dari = $('txDari').value; sampai = $('txSampai').value;
+    if (!dari || !sampai) return { list: [], label: '', kosong: 'Pilih tanggal dari & sampai.' };
+    if (dari > sampai) [dari, sampai] = [sampai, dari];
+    kosong = 'Tidak ada transaksi di rentang ini.';
+  }
+  const bulan = bulanAntara(dari, sampai);
+  const ambil = TX_SEGAR ? callSegar : callC;
+  const hasil = await Promise.all(bulan.map(([y, m]) => ambil('apiTransaksi', y, m, akun)));
+  const list = [].concat(...hasil).filter(t => t.tgl >= dari && t.tgl <= sampai);
+  list.sort((a, b) => (a.tgl < b.tgl ? 1 : a.tgl > b.tgl ? -1 : 0));
+  return { list, label, kosong, info: TXMODE === 'rentang' ? `${tglID(dari)} – ${tglID(sampai)} • ${list.length} transaksi` : `${list.length} transaksi` };
+}
 async function loadTx(paksa) {
   if (!paksa && $('q').value.trim().length >= 2) return cari();
-  const [y, m] = BULAN.tx; $('txMonth').textContent = NAMA_BLN[m - 1] + ' ' + y;
+  const seq = ++TXSEQ; aturModeTx();
+  if (TXMODE === 'bulan') { const [y, m] = BULAN.tx; $('txMonth').textContent = NAMA_BLN[m - 1] + ' ' + y; }
+  if (TXMODE === 'tahun') $('txMonth').textContent = String(TAHUN_TX);
   $('txList').innerHTML = '<div class="loading">Memuat…</div>'; $('txSum').innerHTML = '';
   try {
-    const list = await callC('apiTransaksi', y, m, $('txAkun').value);
+    const r = await ambilTx(); if (seq !== TXSEQ) return;
+    const list = r.list;
     const masuk = list.filter(t => t.tipe === 'Pemasukan').reduce((s, t) => s + t.jumlah, 0);
     const keluar = list.filter(t => t.tipe === 'Pengeluaran').reduce((s, t) => s + t.jumlah, 0);
-    $('txSum').innerHTML = `<div class="grid2" style="margin-bottom:4px"><div class="kpi" style="background:var(--card)"><span>Masuk</span><b class="in">${rp(masuk)}</b></div><div class="kpi" style="background:var(--card)"><span>Keluar</span><b class="out">${rp(keluar)}</b></div></div>`;
-    renderTxList(list, 'Belum ada transaksi di bulan ini.');
+    $('txSum').innerHTML = `<div class="grid2" style="margin-bottom:4px"><div class="kpi" style="background:var(--card)"><span>Masuk</span><b class="in">${rp(masuk)}</b></div><div class="kpi" style="background:var(--card)"><span>Keluar</span><b class="out">${rp(keluar)}</b></div></div>`
+      + (r.info && TXMODE !== 'bulan' ? `<div class="muted" style="font-size:12px;margin:2px 4px 6px">${r.info} • selisih ${rp(masuk - keluar)}</div>` : '');
+    renderTxList(list, r.kosong);
   } catch (e) { $('txList').innerHTML = `<div class="card out">❌ ${esc(e.message)}</div>`; }
 }
 function detailTx(id) {
