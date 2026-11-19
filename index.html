@@ -222,6 +222,31 @@
   .saldo-hero .lbl { display:block; }
   .saldo-hero .ket { display:block; font-size:11px; opacity:.75; margin-top:1px; }
   .saldo-hero b { font-size:19px; font-weight:800; white-space:nowrap; }
+  .ftop { display:flex; align-items:center; justify-content:space-between; gap:8px; }
+  .ftop h2 { margin:0; } .ftop .chip { font-size:13px; white-space:nowrap; }
+  .bagi-cta { display:flex; align-items:center; gap:12px; width:100%; text-align:left; font:inherit; color:var(--text); cursor:pointer; padding:14px 16px; }
+  .bagi-cta .grow { flex:1; display:flex; flex-direction:column; } .bagi-cta b { font-size:16px; }
+  .bagi-cta .ic { width:40px; height:40px; display:flex; align-items:center; justify-content:center; font-size:20px; }
+  .bagi-cta .chev { font-size:22px; color:var(--muted); }
+  .bg-sec { font-size:12px; font-weight:800; color:var(--muted); text-transform:uppercase; letter-spacing:.4px; margin:16px 2px 6px; }
+  .bg-row { padding:10px 0; border-bottom:1px solid var(--line); }
+  .bg-row.mati { opacity:.45; }
+  .bg-l1 { display:flex; gap:8px; align-items:center; }
+  .bg-l1 input.nm { flex:1; min-width:0; padding:10px 12px; font-weight:600; }
+  .bg-l1 input.jm { width:44%; flex:none; text-align:right; font-weight:800; padding:10px 12px; }
+  .bg-l2 { display:flex; gap:8px; margin-top:6px; }
+  .bg-l2 select { flex:1; min-width:0; padding:10px 12px; }
+  .bg-x, .bg-cek { flex:none; width:30px; height:30px; border-radius:10px; border:1px solid var(--glass-brd); background:var(--glass-strong); color:var(--muted); font-size:15px; display:flex; align-items:center; justify-content:center; padding:0; }
+  .bg-cek.on { background:var(--accent); color:#fff; border-color:transparent; }
+  .bg-add { margin-top:10px; width:100%; }
+  #bagi { padding-bottom:0; }
+  .bg-sum { position:sticky; bottom:0; margin:14px -16px 0; padding:10px 16px calc(10px + env(safe-area-inset-bottom)); background:var(--card);
+            border-top:1px solid var(--glass-brd); box-shadow:0 -8px 24px rgba(0,0,0,.08); z-index:2; }
+  .bg-sum .ring { display:flex; justify-content:space-between; gap:8px; font-size:12px; color:var(--muted); margin:0 2px 8px; }
+  .bg-sum .ring b { display:block; font-size:15px; margin-top:1px; }
+  .bg-sum .ring > div:last-child { text-align:right; }
+  .bg-sum .btn { margin-top:0; }
+  .bg-link { display:block; width:100%; margin-top:8px; background:none; border:0; color:var(--muted); font:inherit; font-size:13px; text-decoration:underline; }
 </style>
 </head>
 <body>
@@ -299,7 +324,7 @@
 <div class="sheet-bg" id="bg" onclick="tutupSheet()"></div>
 <div class="sheet" id="form">
   <div class="grab"></div>
-  <h2 id="fTitle">Tambah Transaksi</h2>
+  <div class="ftop"><h2 id="fTitle">Tambah Transaksi</h2><button class="chip" id="fBagi" onclick="tutupSheet(); setTimeout(bukaBagi, 250)">💸 Bagi Gaji</button></div>
   <div class="seg tipe" id="fTipe">
     <button data-t="Pengeluaran" class="on">💸 Keluar</button><button data-t="Pemasukan">💰 Masuk</button><button data-t="Transfer">🔁 Transfer</button>
   </div>
@@ -313,6 +338,14 @@
   <label>Catatan</label><input id="fCatatan" placeholder="mis. Makan siang" autocomplete="off">
   <button class="btn" id="fSimpan" onclick="simpan()">Simpan</button>
   <button class="btn ghost" onclick="tutupSheet()">Batal</button>
+</div>
+
+<!-- ============ BAGI GAJI ============ -->
+<div class="sheet" id="bagi">
+  <div class="grab"></div>
+  <h2>💸 Bagi Gaji</h2>
+  <div class="muted" style="margin:-6px 0 4px">Catat gaji masuk & pembagiannya sekaligus. Semua bisa diedit.</div>
+  <div id="bagiBody"></div>
 </div>
 
 <!-- ============ DETAIL TRANSAKSI ============ -->
@@ -366,7 +399,7 @@ async function call(fn, ...args) {
   return j.data;
 }
 /* ---------- cache di HP: tampil instan, perbarui di belakang ---------- */
-const UBAH = ['apiSimpan', 'apiHapus', 'apiSetCicilan', 'apiEdit', 'apiRenovasiBayar'];
+const UBAH = ['apiSimpan', 'apiSimpanBanyak', 'apiHapus', 'apiSetCicilan', 'apiEdit', 'apiRenovasiBayar'];
 const MEM = {}, SEGAR_PADA = {}; let GEN = 0;
 function bersihCache() {
   GEN++;
@@ -430,7 +463,7 @@ function ikonKat(nama, tipe) { const k = INIT && INIT.kategori.find(x => x.nama 
 
 /* ---------- navigasi ---------- */
 document.querySelectorAll('.tabs button[data-s]').forEach(b => b.onclick = () => buka(b.dataset.s));
-const APP_VER = '2026.11.19-4';
+const APP_VER = '2026.11.19-5';
 try { if (localStorage.getItem('keu_ver') !== APP_VER) { Object.keys(localStorage).filter(k => k.startsWith('keu_c_') || k === 'keu_boot').forEach(k => localStorage.removeItem(k)); localStorage.setItem('keu_ver', APP_VER); } } catch (e) {}
 /* ---------- update otomatis: cek versi terbaru di server tiap app dibuka ---------- */
 async function cekUpdate() {
@@ -625,6 +658,7 @@ function renderHome(b) {
       <div class="card hero"><div class="lbl">Kekayaan Bersih</div><div class="big">${rpS(d.netWorth)}</div>
         <div class="saldo-hero"><div><span class="lbl">Total Saldo</span><span class="ket">semua akun, tanpa aset</span></div><b>${rp(totalSaldo)}</b></div>
         <div class="row"><div><span class="lbl">Total Aset</span><b>${rpS(d.totalAset)}</b></div><div><span class="lbl">Sisa Utang</span><b>${rpS(d.sisaUtang)}</b></div></div></div>
+      <button class="card bagi-cta" onclick="bukaBagi()"><span class="ic">💸</span><span class="grow"><b>Bagi Gaji</b><span class="t2">Catat gaji & split ke tiap pos sekaligus</span></span><span class="chev">›</span></button>
       <div class="card"><h3 class="cychead">${(() => { const [cy, cm] = d.bulan.y ? [d.bulan.y, d.bulan.m] : siklusDari(now); return labelSiklus(cy, cm); })()}</h3>
         <div class="grid3">
           <div class="kpi"><span>Masuk</span><b class="in">${rpS(d.bulan.masuk)}</b></div>
@@ -873,6 +907,143 @@ async function simpan() {
     if ($('s-utang').classList.contains('on')) loadUtang();
   } catch (e) { toast('❌ ' + e.message, 5000); }
   $('fSimpan').disabled = false;
+}
+
+
+/* ---------- BAGI GAJI ---------- */
+const BAGI_DEFAULT = {
+  sumber: 'BCA Shina',
+  masuk: [
+    { on: true, nama: 'Gaji Elang - SIS', jumlah: 14050000, akun: 'BCA Shina', kat: 'Gaji' },
+    { on: true, nama: 'Gaji Dini', jumlah: 9995000, akun: 'BCA Shina', kat: 'Gaji' },
+  ],
+  bagi: [
+    { nama: 'Cicilan Mobil', jumlah: 3166700, ke: 'K|Cicilan Utang', utang: 'mobil' },
+    { nama: 'Shina', jumlah: 1000000, ke: 'K|Anak' },
+    { nama: 'Dini', jumlah: 1500000, ke: 'K|Pinjaman & Uang Keluarga' },
+    { nama: 'Elang', jumlah: 1500000, ke: 'T|Jajan Elang' },
+    { nama: 'Mama', jumlah: 2500000, ke: 'K|Pinjaman & Uang Keluarga' },
+    { nama: 'Rumah', jumlah: 6000000, ke: 'T|Uang Rumah' },
+    { nama: 'Maintenance', jumlah: 1500000, ke: 'T|Maintenance' },
+    { nama: 'Entertainment', jumlah: 500000, ke: 'K|Hiburan & Liburan' },
+    { nama: 'Digital', jumlah: 300000, ke: 'T|Digital' },
+    { nama: 'Cicilan Toko', jumlah: 2000000, ke: 'K|Cicilan Utang', utang: 'toko' },
+    { nama: 'Healthcare', jumlah: 1000000, ke: 'T|Healthcare' },
+  ],
+};
+let BAGI = null, BAGI_SIBUK = false;
+const angkaRp = n => n ? 'Rp' + Number(n).toLocaleString('id-ID') : '';
+const bacaAngka = s => Number(String(s || '').replace(/[^0-9]/g, '')) || 0;
+const akunAktif = () => INIT.akun.filter(a => a.aktif).map(a => a.nama);
+const katTipe = t => INIT.kategori.filter(k => k.tipe === t).map(k => k.nama);
+function cariUtang(petunjuk) {   // 'mobil' → nama hutang yang mengandung kata itu
+  if (!petunjuk) return '';
+  const p = String(petunjuk).toLowerCase();
+  return INIT.utang.find(u => u.toLowerCase() === p) || INIT.utang.find(u => u.toLowerCase().includes(p)) || '';
+}
+function bukaBagi() {
+  if (!INIT) return toast('Tunggu data selesai dimuat…');
+  let t = null; try { t = JSON.parse(localStorage.getItem('keu_bagi') || 'null'); } catch (e) {}
+  BAGI = JSON.parse(JSON.stringify(t && t.bagi ? t : BAGI_DEFAULT));
+  BAGI.tgl = INIT.hariIni;
+  renderBagi(); bukaSheet('bagi'); $('bagi').scrollTop = 0;
+}
+function opsiAkun(pilih, kecuali) {
+  return akunAktif().filter(a => a !== kecuali).map(a => `<option ${a === pilih ? 'selected' : ''}>${esc(a)}</option>`).join('');
+}
+function opsiKe(ke, sumber) {
+  const [jenis, nilai] = String(ke || '|').split('|');
+  const t = akunAktif().filter(a => a !== sumber).map(a => `<option value="T|${esc(a)}" ${jenis === 'T' && a === nilai ? 'selected' : ''}>🔁 ${esc(a)}</option>`).join('');
+  const k = katTipe('Pengeluaran').map(c => `<option value="K|${esc(c)}" ${jenis === 'K' && c === nilai ? 'selected' : ''}>${esc(c)}</option>`).join('');
+  const ada = (jenis === 'T' && akunAktif().includes(nilai) && nilai !== sumber) || (jenis === 'K' && katTipe('Pengeluaran').includes(nilai));
+  return `<option value="" ${ada ? '' : 'selected'} disabled>Pilih tujuan / kategori…</option><optgroup label="Pindah ke akun (Transfer)">${t}</optgroup><optgroup label="Pengeluaran (kategori)">${k}</optgroup>`;
+}
+function renderBagi() {
+  const B = BAGI;
+  let h = `<label>Tanggal</label><input type="date" id="bgTgl" value="${esc(B.tgl || '')}">`;
+  h += `<div class="bg-sec">Gaji masuk</div>`;
+  h += B.masuk.map((m, i) => `<div class="bg-row ${m.on ? '' : 'mati'}">
+      <div class="bg-l1"><button class="bg-cek ${m.on ? 'on' : ''}" data-cek="${i}" aria-label="Catat baris ini">${m.on ? '✓' : ''}</button>
+        <input class="nm" data-m="${i}" data-f="nama" value="${esc(m.nama)}" placeholder="Nama">
+        <input class="jm" data-m="${i}" data-f="jumlah" inputmode="numeric" value="${angkaRp(m.jumlah)}" placeholder="Rp0"></div>
+      <div class="bg-l2"><select data-m="${i}" data-f="akun">${opsiAkun(m.akun)}</select>
+        <select data-m="${i}" data-f="kat">${katTipe('Pemasukan').map(c => `<option ${c === m.kat ? 'selected' : ''}>${esc(c)}</option>`).join('')}</select></div></div>`).join('');
+  h += `<div class="bg-sec">Dibagi dari akun</div><select id="bgSumber">${opsiAkun(B.sumber)}</select>`;
+  h += `<div class="bg-sec">Pembagian</div>`;
+  h += B.bagi.map((r, i) => {
+    const kat = String(r.ke || '').startsWith('K|') ? r.ke.slice(2) : '';
+    const hut = kat === 'Cicilan Utang' && INIT.utang.length
+      ? `<select data-b="${i}" data-f="utang">${INIT.utang.map(u => `<option ${u === cariUtang(r.utang) ? 'selected' : ''}>${esc(u)}</option>`).join('')}</select>` : '';
+    return `<div class="bg-row">
+      <div class="bg-l1"><input class="nm" data-b="${i}" data-f="nama" value="${esc(r.nama)}" placeholder="Nama">
+        <input class="jm" data-b="${i}" data-f="jumlah" inputmode="numeric" value="${angkaRp(r.jumlah)}" placeholder="Rp0">
+        <button class="bg-x" data-hapus="${i}" aria-label="Hapus baris">✕</button></div>
+      <div class="bg-l2"><select data-b="${i}" data-f="ke">${opsiKe(r.ke, B.sumber)}</select>${hut}</div></div>`;
+  }).join('');
+  h += `<button class="btn ghost bg-add" id="bgTambah">＋ Tambah baris</button>`;
+  h += `<div class="bg-sum"><div class="ring" id="bgSum"></div>
+      <button class="btn" id="bgSimpan" onclick="simpanBagi()">Simpan</button>
+      <button class="bg-link" id="bgReset">Kembalikan ke pembagian awal</button></div>`;
+  $('bagiBody').innerHTML = h;
+  // event
+  $('bgTgl').onchange = e => B.tgl = e.target.value;
+  $('bgSumber').onchange = e => { B.sumber = e.target.value; renderBagi(); };
+  $('bagiBody').querySelectorAll('[data-cek]').forEach(b => b.onclick = () => { const m = B.masuk[b.dataset.cek]; m.on = !m.on; renderBagi(); });
+  $('bagiBody').querySelectorAll('[data-hapus]').forEach(b => b.onclick = () => { B.bagi.splice(+b.dataset.hapus, 1); renderBagi(); });
+  $('bgTambah').onclick = () => { B.bagi.push({ nama: '', jumlah: 0, ke: '' }); renderBagi(); const n = $('bagiBody').querySelectorAll('input.nm[data-b]'); n[n.length - 1].focus(); };
+  $('bgReset').onclick = () => { if (!confirm('Kembalikan semua baris ke pembagian awal?')) return; const tgl = B.tgl; BAGI = JSON.parse(JSON.stringify(BAGI_DEFAULT)); BAGI.tgl = tgl; renderBagi(); };
+  $('bagiBody').querySelectorAll('input[data-f], select[data-f]').forEach(el => {
+    const obj = () => el.dataset.m !== undefined ? B.masuk[el.dataset.m] : B.bagi[el.dataset.b];
+    const ev = el.tagName === 'SELECT' ? 'change' : 'input';
+    el.addEventListener(ev, () => {
+      const o = obj(), f = el.dataset.f;
+      if (f === 'jumlah') { o.jumlah = bacaAngka(el.value); el.value = angkaRp(o.jumlah); }
+      else o[f] = el.value;
+      if (f === 'ke') { if (el.value === 'K|Cicilan Utang' && !o.utang) o.utang = INIT.utang[0] || ''; renderBagi(); return; }
+      ringkasBagi();
+    });
+  });
+  ringkasBagi();
+}
+function daftarBagi() {
+  const B = BAGI, out = [];
+  B.masuk.filter(m => m.on && m.jumlah > 0).forEach(m => out.push({ tipe: 'Pemasukan', tanggal: B.tgl, akun: m.akun, kategori: m.kat, jumlah: m.jumlah, catatan: m.nama }));
+  B.bagi.filter(r => r.jumlah > 0).forEach(r => {
+    const [jenis, nilai] = String(r.ke || '|').split('|');
+    if (jenis === 'T') out.push({ tipe: 'Transfer', tanggal: B.tgl, akun: B.sumber, akunTujuan: nilai, jumlah: r.jumlah, catatan: r.nama });
+    else out.push({ tipe: 'Pengeluaran', tanggal: B.tgl, akun: B.sumber, kategori: nilai || '', jumlah: r.jumlah, catatan: r.nama,
+                    utang: nilai === 'Cicilan Utang' ? cariUtang(r.utang) : '' });
+  });
+  return out;
+}
+function ringkasBagi() {
+  const B = BAGI;
+  const masuk = B.masuk.filter(m => m.on).reduce((s, m) => s + (m.jumlah || 0), 0);
+  const dibagi = B.bagi.reduce((s, r) => s + (r.jumlah || 0), 0), sisa = masuk - dibagi;
+  $('bgSum').innerHTML = `<div>Masuk<b class="in">${rp(masuk)}</b></div><div>Dibagi<b class="out">${rp(dibagi)}</b></div>
+    <div>Sisa di ${esc(B.sumber)}<b class="${sisa >= 0 ? 'in' : 'out'}">${rp(sisa)}</b></div>`;
+  $('bgSimpan').textContent = `Simpan ${daftarBagi().length} transaksi`;
+}
+async function simpanBagi() {
+  if (BAGI_SIBUK) return;
+  const B = BAGI, list = daftarBagi();
+  if (!B.tgl) return toast('Isi tanggal dulu');
+  if (!list.length) return toast('Belum ada yang diisi');
+  const kosong = B.bagi.find(r => r.jumlah > 0 && !String(r.ke || '').includes('|') || (r.jumlah > 0 && String(r.ke || '').split('|')[1] === ''));
+  if (kosong) return toast(`Pilih tujuan / kategori untuk "${kosong.nama || 'baris baru'}"`);
+  const salah = list.find(d => d.tipe === 'Transfer' && d.akunTujuan === d.akun);
+  if (salah) return toast(`"${salah.catatan}": akun tujuan sama dengan akun sumber`);
+  BAGI_SIBUK = true; $('bgSimpan').disabled = true; $('bgSimpan').textContent = 'Menyimpan…';
+  try {
+    try { await call('apiSimpanBanyak', list); }
+    catch (e) { if (!/API tidak dikenal/.test(e.message)) throw e; for (const d of list) await call('apiSimpan', d); }   // server lama
+    const simpanTpl = { sumber: B.sumber, masuk: B.masuk, bagi: B.bagi };
+    try { localStorage.setItem('keu_bagi', JSON.stringify(simpanTpl)); } catch (e) {}
+    tutupSheet(); toast(`✅ ${list.length} transaksi tersimpan`, 4000); loadHome();
+    if ($('s-tx').classList.contains('on')) loadTx();
+    if ($('s-utang').classList.contains('on')) loadUtang();
+  } catch (e) { toast('❌ ' + e.message, 6000); }
+  BAGI_SIBUK = false; $('bgSimpan').disabled = false; ringkasBagi();
 }
 
 /* ---------- utang ---------- */
