@@ -354,7 +354,7 @@ function bersihCache() {
 function segarkan(fn) {
   const on = s => $('s-' + s).classList.contains('on');
   const cari = $('q').value.trim().length >= 2;
-  if (fn === 'apiTransaksi' && on('tx') && !cari) loadTx();
+  if ((fn === 'apiTransaksi' || fn === 'apiRentang') && on('tx') && !cari) loadTx();
   else if (fn === 'apiCari' && on('tx') && cari) window.cari();
   else if (fn === 'apiUtang' && on('utang')) loadUtang();
   else if (on('more') && ({ apiLaporan: 'lap', apiRenovasi: 'ren', apiAset: 'aset' })[fn] === curMore()) loadMore();
@@ -408,7 +408,7 @@ function ikonKat(nama, tipe) { const k = INIT && INIT.kategori.find(x => x.nama 
 
 /* ---------- navigasi ---------- */
 document.querySelectorAll('.tabs button[data-s]').forEach(b => b.onclick = () => buka(b.dataset.s));
-const APP_VER = '2026.11.19-1';
+const APP_VER = '2026.11.19-2';
 /* ---------- update otomatis: cek versi terbaru di server tiap app dibuka ---------- */
 async function cekUpdate() {
   try {
@@ -720,10 +720,14 @@ async function ambilTx() {
     if (dari > sampai) [dari, sampai] = [sampai, dari];
     kosong = 'Tidak ada transaksi di rentang ini.';
   }
-  const bulan = bulanAntara(dari, sampai);
   const ambil = TX_SEGAR ? callSegar : callC;
-  const hasil = await Promise.all(bulan.map(([y, m]) => ambil('apiTransaksi', y, m, akun)));
-  const list = [].concat(...hasil).filter(t => t.tgl >= dari && t.tgl <= sampai);
+  let list;
+  try { list = (await ambil('apiRentang', dari, sampai, akun)).slice(); }   // 1 permintaan ke server
+  catch (e) {
+    if (!/API tidak dikenal/.test(e.message)) throw e;   // server lama → ambil per bulan
+    const hasil = await Promise.all(bulanAntara(dari, sampai).map(([y, m]) => ambil('apiTransaksi', y, m, akun)));
+    list = [].concat(...hasil).filter(t => t.tgl >= dari && t.tgl <= sampai);
+  }
   list.sort((a, b) => (a.tgl < b.tgl ? 1 : a.tgl > b.tgl ? -1 : 0));
   return { list, label, kosong, info: TXMODE === 'rentang' ? `${tglID(dari)} – ${tglID(sampai)} • ${list.length} transaksi` : `${list.length} transaksi` };
 }
