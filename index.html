@@ -216,6 +216,12 @@
   h3.cychead { display:flex; flex-direction:column; align-items:flex-start; gap:0; }
   h3.cychead .cycm { font-size:17px; text-transform:none; letter-spacing:0; }
   h3.cychead .cycr { text-transform:none; letter-spacing:0; }
+  .cycm { color:var(--text); }
+  .saldo-hero { display:flex; align-items:center; justify-content:space-between; gap:10px; margin:-4px 0 10px; padding:10px 12px; border-radius:14px;
+      background:rgba(255,255,255,.16); border:1px solid rgba(255,255,255,.22); box-shadow:inset 0 1px 0 rgba(255,255,255,.25); }
+  .saldo-hero .lbl { display:block; }
+  .saldo-hero .ket { display:block; font-size:11px; opacity:.75; margin-top:1px; }
+  .saldo-hero b { font-size:19px; font-weight:800; white-space:nowrap; }
 </style>
 </head>
 <body>
@@ -424,7 +430,7 @@ function ikonKat(nama, tipe) { const k = INIT && INIT.kategori.find(x => x.nama 
 
 /* ---------- navigasi ---------- */
 document.querySelectorAll('.tabs button[data-s]').forEach(b => b.onclick = () => buka(b.dataset.s));
-const APP_VER = '2026.11.19-3';
+const APP_VER = '2026.11.19-4';
 try { if (localStorage.getItem('keu_ver') !== APP_VER) { Object.keys(localStorage).filter(k => k.startsWith('keu_c_') || k === 'keu_boot').forEach(k => localStorage.removeItem(k)); localStorage.setItem('keu_ver', APP_VER); } } catch (e) {}
 /* ---------- update otomatis: cek versi terbaru di server tiap app dibuka ---------- */
 async function cekUpdate() {
@@ -617,8 +623,8 @@ function renderHome(b) {
     const maxTop = Math.max(1, ...d.top.map(t => t.jumlah));
     let h = `
       <div class="card hero"><div class="lbl">Kekayaan Bersih</div><div class="big">${rpS(d.netWorth)}</div>
+        <div class="saldo-hero"><div><span class="lbl">Total Saldo</span><span class="ket">semua akun, tanpa aset</span></div><b>${rp(totalSaldo)}</b></div>
         <div class="row"><div><span class="lbl">Total Aset</span><b>${rpS(d.totalAset)}</b></div><div><span class="lbl">Sisa Utang</span><b>${rpS(d.sisaUtang)}</b></div></div></div>
-      <div class="card"><div class="muted" style="text-transform:uppercase;letter-spacing:.4px;font-weight:700">Total Saldo <span style="font-weight:400;text-transform:none">(semua akun, tanpa aset)</span></div><div style="font-size:26px;font-weight:800;color:var(--teal);margin-top:4px">${rp(totalSaldo)}</div><div class="t2">${init.akun.filter(a => a.saldo).length} akun berisi saldo</div></div>
       <div class="card"><h3 class="cychead">${(() => { const [cy, cm] = d.bulan.y ? [d.bulan.y, d.bulan.m] : siklusDari(now); return labelSiklus(cy, cm); })()}</h3>
         <div class="grid3">
           <div class="kpi"><span>Masuk</span><b class="in">${rpS(d.bulan.masuk)}</b></div>
