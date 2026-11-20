@@ -510,7 +510,7 @@ function ikonKat(nama, tipe) { const k = INIT && INIT.kategori.find(x => x.nama 
 
 /* ---------- navigasi ---------- */
 document.querySelectorAll('.tabs button[data-s]').forEach(b => b.onclick = () => buka(b.dataset.s));
-const APP_VER = '2026.11.20-1';
+const APP_VER = '2026.11.20-2';
 try { if (localStorage.getItem('keu_ver') !== APP_VER) { Object.keys(localStorage).filter(k => k.startsWith('keu_c_') || k === 'keu_boot').forEach(k => localStorage.removeItem(k)); localStorage.setItem('keu_ver', APP_VER); } } catch (e) {}
 /* ---------- update otomatis: cek versi terbaru di server tiap app dibuka ---------- */
 async function cekUpdate() {
@@ -589,6 +589,7 @@ async function refreshLayar() {
            : ({ lap: 'apiLaporan', ren: 'apiRenovasi', aset: 'apiAset' })[curMore()];
   const args = ARGS_TERAKHIR[fn] || [];
   const k = 'keu_c_' + fn + JSON.stringify(args);
+  try { await call('apiSegarkan'); } catch (e) {}   // buang cache server (mis. Sheet diedit langsung)
   const dt = await call(fn, ...args);
   MEM[k] = dt; SEGAR_PADA[k] = Date.now(); try { localStorage.setItem(k, JSON.stringify(dt)); } catch (e) {}
   segarkan(fn);
