@@ -510,7 +510,7 @@ function ikonKat(nama, tipe) { const k = INIT && INIT.kategori.find(x => x.nama 
 
 /* ---------- navigasi ---------- */
 document.querySelectorAll('.tabs button[data-s]').forEach(b => b.onclick = () => buka(b.dataset.s));
-const APP_VER = '2026.11.19-7';
+const APP_VER = '2026.11.20-1';
 try { if (localStorage.getItem('keu_ver') !== APP_VER) { Object.keys(localStorage).filter(k => k.startsWith('keu_c_') || k === 'keu_boot').forEach(k => localStorage.removeItem(k)); localStorage.setItem('keu_ver', APP_VER); } } catch (e) {}
 /* ---------- update otomatis: cek versi terbaru di server tiap app dibuka ---------- */
 async function cekUpdate() {
@@ -727,7 +727,7 @@ function renderHome(b) {
       <div class="card" onclick="bukaMore('ren')"><h3><span>Renovasi Rumah</span><span>›</span></h3>
         <div style="display:flex;justify-content:space-between"><span>Dibayar ${rpS(d.renov.dibayar)} / ${rpS(d.renov.total)}</span><b>${pct(d.renov.progress)}%</b></div>
         <div class="bar"><i style="width:${pct(d.renov.progress)}%;background:var(--orange)"></i></div>
-        <div class="t2" style="margin-top:6px">Sisa ${rp(d.renov.sisa)} • Dana ${d.renov.selisihDana >= 0 ? 'lebih' : 'kurang'} <b class="${d.renov.selisihDana >= 0 ? 'in' : 'out'}">${rp(Math.abs(d.renov.selisihDana))}</b></div></div>
+        <div class="t2" style="margin-top:6px">Sisa ${rp(d.renov.sisa)}${d.renov.over ? ` • <b class="out">over ${rp(d.renov.over)}</b>` : ''} • Dana ${d.renov.selisihDana >= 0 ? 'lebih' : 'kurang'} <b class="${d.renov.selisihDana >= 0 ? 'in' : 'out'}">${rp(Math.abs(d.renov.selisihDana))}</b></div></div>
       <div class="card"><h3><span>Transaksi Terakhir</span><span onclick="buka('tx')">Semua ›</span></h3><div class="list">${d.terakhir.map(itemTx).join('')}</div></div>`;
     $('home').innerHTML = h;
 }
@@ -1247,13 +1247,14 @@ function renderRen() {
   const tampil = RENSEMUA ? r.items : belum;
   el.innerHTML = `
     <div class="card hero"><div class="lbl">Progres Pembayaran</div><div class="big">${pct(tot.progress)}%</div>
-      <div class="row"><div><span class="lbl">Dibayar</span><b>${rpS(tot.dibayar)}</b></div><div><span class="lbl">Sisa</span><b>${rpS(tot.sisa)}</b></div></div></div>
+      <div class="row"><div><span class="lbl">Dibayar</span><b>${rpS(tot.dibayar)}</b></div><div><span class="lbl">Sisa</span><b>${rpS(tot.sisa)}</b></div></div>
+      ${tot.over ? `<div class="t2" style="margin-top:10px;white-space:normal">🔴 Over budget <b class="out">${rp(tot.over)}</b><br>Proyeksi biaya ${rp(tot.anggaran + tot.over)} (anggaran ${rp(tot.anggaran)})</div>` : ''}</div>
     <div class="card"><h3><span>Per Bagian</span></h3>${bag.map(b => `<div style="margin-bottom:10px"><div style="display:flex;justify-content:space-between"><b>${esc(b.nama)}</b><span>${pct(b.progress)}%</span></div>
-      <div class="bar"><i style="width:${pct(b.progress)}%;background:var(--orange)"></i></div><div class="t2">${rp(b.dibayar)} / ${rp(b.anggaran)}</div></div>`).join('')}</div>
+      <div class="bar"><i style="width:${pct(b.progress)}%;background:var(--orange)"></i></div><div class="t2">${rp(b.dibayar)} / ${rp(b.anggaran)}${b.over ? ` • <b class="out">over ${rp(b.over)}</b>` : ''}</div></div>`).join('')}</div>
     <div class="card"><h3><span>Ketersediaan Dana</span></h3><div class="list">${r.dana.filter(d => d.label).map(d => `<div class="it"><div class="grow">${esc(d.label)}</div><div class="amt ${/Kelebihan/.test(d.label) ? (d.nilai >= 0 ? 'in' : 'out') : ''}">${rp(d.nilai)}</div></div>`).join('')}</div></div>
     <div class="card"><h3><span>${RENSEMUA ? 'Semua Item' : 'Belum Lunas'} (${tampil.length})</span><span class="linkbtn" onclick="RENSEMUA=!RENSEMUA;renderRen()">${RENSEMUA ? 'Belum lunas saja' : 'Tampilkan semua'} ›</span></h3>
-      <div class="list">${tampil.map(i => `<div class="it tap" onclick="bukaRen(${i.row})"><div class="grow"><div class="t1">${esc(i.item)}</div><div class="t2">${esc(i.bagian)}${i.brand ? ' • ' + esc(i.brand) : ''}${i.sisa > 0 && i.dibayar ? ' • dibayar ' + rp(i.dibayar) : ''}</div></div>
-        <div class="amt ${i.sisa > 0 ? 'out' : 'in'}">${i.sisa > 0 ? rp(i.sisa) : '✅ ' + rp(i.total)}</div></div>`).join('')}</div>
+      <div class="list">${tampil.map(i => `<div class="it tap" onclick="bukaRen(${i.row})"><div class="grow"><div class="t1">${esc(i.item)}</div><div class="t2">${esc(i.bagian)}${i.brand ? ' • ' + esc(i.brand) : ''}${i.sisa > 0 && i.dibayar ? ' • dibayar ' + rp(i.dibayar) : ''}${i.over ? ` • <b class="out">over ${rp(i.over)}</b>` : ''}</div></div>
+        <div class="amt ${i.sisa > 0 || i.over ? 'out' : 'in'}">${i.sisa > 0 ? rp(i.sisa) : (i.over ? '🔴 ' : '✅ ') + rp(i.dibayar)}</div></div>`).join('')}</div>
       <div class="muted" style="margin-top:8px">Ketuk item untuk mencatat pembayaran.</div></div>`;
 }
 function bukaRen(row) {
@@ -1261,14 +1262,15 @@ function bukaRen(row) {
   $('detailBody').innerHTML = `<h2>🔨 ${esc(i.item)}</h2>
     <div class="card"><div class="list">
       <div class="it"><div class="grow muted">Bagian</div><div>${esc(i.bagian)}</div></div>
-      <div class="it"><div class="grow muted">Total</div><div class="amt">${rp(i.total)}</div></div>
+      <div class="it"><div class="grow muted">Anggaran</div><div class="amt">${rp(i.total)}</div></div>
       <div class="it"><div class="grow muted">Sudah dibayar</div><div class="amt">${rp(i.dibayar)}</div></div>
       <div class="it"><div class="grow muted">Sisa</div><div class="amt ${i.sisa > 0 ? 'out' : 'in'}">${rp(i.sisa)}</div></div>
+      ${i.over ? `<div class="it"><div class="grow muted">🔴 Over budget</div><div class="amt out">${rp(i.over)} (${Math.round(i.over / (i.total || 1) * 100)}%)</div></div>` : ''}
       ${i.tanggal ? `<div class="it"><div class="grow muted">Tanggal</div><div>${esc(i.tanggal)}</div></div>` : ''}
     </div></div>
     <label>Total sudah dibayar</label>
     <input id="renBayar" class="amount" inputmode="numeric" value="${'Rp' + Number(i.dibayar).toLocaleString('id-ID')}">
-    <div class="muted" style="margin-top:4px">Isi total kumulatif yang sudah dibayar (bukan hanya pembayaran terbaru).</div>
+    <div class="muted" style="margin-top:4px">Isi total kumulatif yang sudah dibayar (bukan hanya pembayaran terbaru). Kalau biaya aktualnya melebihi anggaran, isi saja angka sebenarnya — kelebihannya tercatat sebagai over budget.</div>
     <div class="row2"><button class="btn" onclick="simpanRen(${row}, $('renBayar').value)">Simpan</button>
       <button class="btn ghost" style="margin-top:16px" onclick="simpanRen(${row}, ${i.total})">✅ Tandai Lunas</button></div>
     <button class="btn ghost" onclick="tutupSheet()">Batal</button>`;
